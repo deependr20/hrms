@@ -12,8 +12,14 @@ export default function EmployeesPage() {
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
+  const [user, setUser] = useState(null)
 
   useEffect(() => {
+    const userData = localStorage.getItem('user')
+    if (userData) {
+      const parsedUser = JSON.parse(userData)
+      setUser(parsedUser)
+    }
     fetchEmployees()
   }, [page, search])
 
@@ -46,6 +52,11 @@ export default function EmployeesPage() {
   }
 
   const handleDelete = async (id) => {
+    if (!canManageEmployees()) {
+      toast.error('You do not have permission to delete employees')
+      return
+    }
+
     if (!confirm('Are you sure you want to delete this employee?')) return
 
     try {
@@ -71,6 +82,14 @@ export default function EmployeesPage() {
     }
   }
 
+  const canManageEmployees = () => {
+    return user && ['admin', 'hr'].includes(user.role)
+  }
+
+  const canViewEmployeeDetails = () => {
+    return user && ['admin', 'hr', 'manager'].includes(user.role)
+  }
+
   const handleSearch = (e) => {
     setSearch(e.target.value)
     setPage(1)
@@ -82,15 +101,19 @@ export default function EmployeesPage() {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold text-gray-800">Employees</h1>
-          <p className="text-gray-600 mt-1">Manage your organization's employees</p>
+          <p className="text-gray-600 mt-1">
+            {canManageEmployees() ? 'Manage your organization\'s employees' : 'View organization employees'}
+          </p>
         </div>
-        <button
-          onClick={() => router.push('/dashboard/employees/add')}
-          className="btn-primary flex items-center space-x-2"
-        >
-          <FaPlus />
-          <span>Add Employee</span>
-        </button>
+        {canManageEmployees() && (
+          <button
+            onClick={() => router.push('/dashboard/employees/add')}
+            className="btn-primary flex items-center space-x-2"
+          >
+            <FaPlus />
+            <span>Add Employee</span>
+          </button>
+        )}
       </div>
 
       {/* Search and Filters */}
@@ -188,27 +211,33 @@ export default function EmployeesPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex space-x-2">
-                          <button
-                            onClick={() => router.push(`/dashboard/employees/${employee._id}`)}
-                            className="text-blue-600 hover:text-blue-900"
-                            title="View"
-                          >
-                            <FaEye />
-                          </button>
-                          <button
-                            onClick={() => router.push(`/dashboard/employees/edit/${employee._id}`)}
-                            className="text-green-600 hover:text-green-900"
-                            title="Edit"
-                          >
-                            <FaEdit />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(employee._id)}
-                            className="text-red-600 hover:text-red-900"
-                            title="Delete"
-                          >
-                            <FaTrash />
-                          </button>
+                          {canViewEmployeeDetails() && (
+                            <button
+                              onClick={() => router.push(`/dashboard/employees/${employee._id}`)}
+                              className="text-blue-600 hover:text-blue-900 p-2 rounded-lg hover:bg-blue-50 transition-colors"
+                              title="View Details"
+                            >
+                              <FaEye />
+                            </button>
+                          )}
+                          {canManageEmployees() && (
+                            <>
+                              <button
+                                onClick={() => router.push(`/dashboard/employees/edit/${employee._id}`)}
+                                className="text-green-600 hover:text-green-900 p-2 rounded-lg hover:bg-green-50 transition-colors"
+                                title="Edit Employee"
+                              >
+                                <FaEdit />
+                              </button>
+                              <button
+                                onClick={() => handleDelete(employee._id)}
+                                className="text-red-600 hover:text-red-900 p-2 rounded-lg hover:bg-red-50 transition-colors"
+                                title="Delete Employee"
+                              >
+                                <FaTrash />
+                              </button>
+                            </>
+                          )}
                         </div>
                       </td>
                     </tr>

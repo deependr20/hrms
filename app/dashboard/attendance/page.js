@@ -162,7 +162,7 @@ export default function AttendancePage() {
       <div className="bg-white rounded-lg shadow-md p-6 mb-6">
         <div className="flex flex-col md:flex-row items-center justify-between">
           <div className="mb-4 md:mb-0">
-            <h2 className="text-xl font-semibold text-gray-800 mb-2">Today's Attendance</h2>
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">Today&apos;s Attendance</h2>
             <div className="flex items-center space-x-4 text-gray-600">
               <div className="flex items-center space-x-2">
                 <FaClock className="text-primary-500" />

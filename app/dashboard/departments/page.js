@@ -9,14 +9,31 @@ export default function DepartmentsPage() {
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [editingDept, setEditingDept] = useState(null)
+  const [user, setUser] = useState(null)
+  const [employees, setEmployees] = useState([])
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     code: '',
+    head: '',
   })
 
   useEffect(() => {
-    fetchDepartments()
+    const userData = localStorage.getItem('user')
+    if (userData) {
+      const parsedUser = JSON.parse(userData)
+      setUser(parsedUser)
+
+      // Check role-based access
+      if (!['admin', 'hr'].includes(parsedUser.role)) {
+        // For employees and managers, show read-only view
+        fetchDepartments()
+      } else {
+        // For admin and HR, show full management interface
+        fetchDepartments()
+        fetchEmployees()
+      }
+    }
   }, [])
 
   const fetchDepartments = async () => {
@@ -29,12 +46,30 @@ export default function DepartmentsPage() {
       const data = await response.json()
       if (data.success) {
         setDepartments(data.data)
+      } else {
+        toast.error(data.message || 'Failed to fetch departments')
       }
     } catch (error) {
       console.error('Fetch departments error:', error)
       toast.error('Failed to fetch departments')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchEmployees = async () => {
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch('/api/employees', {
+        headers: { 'Authorization': `Bearer ${token}` },
+      })
+
+      const data = await response.json()
+      if (data.success) {
+        setEmployees(data.data)
+      }
+    } catch (error) {
+      console.error('Fetch employees error:', error)
     }
   }
 
@@ -80,6 +115,7 @@ export default function DepartmentsPage() {
       name: dept.name,
       description: dept.description || '',
       code: dept.code || '',
+      head: dept.head?._id || '',
     })
     setShowModal(true)
   }
@@ -111,7 +147,11 @@ export default function DepartmentsPage() {
   const handleCloseModal = () => {
     setShowModal(false)
     setEditingDept(null)
-    setFormData({ name: '', description: '', code: '' })
+    setFormData({ name: '', description: '', code: '', head: '' })
+  }
+
+  const canManageDepartments = () => {
+    return user && ['admin', 'hr'].includes(user.role)
   }
 
   return (
@@ -120,15 +160,19 @@ export default function DepartmentsPage() {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold text-gray-800">Departments</h1>
-          <p className="text-gray-600 mt-1">Manage company departments</p>
+          <p className="text-gray-600 mt-1">
+            {canManageDepartments() ? 'Manage company departments' : 'View company departments'}
+          </p>
         </div>
-        <button
-          onClick={() => setShowModal(true)}
-          className="btn-primary flex items-center space-x-2"
-        >
-          <FaPlus />
-          <span>Add Department</span>
-        </button>
+        {canManageDepartments() && (
+          <button
+            onClick={() => setShowModal(true)}
+            className="btn-primary flex items-center space-x-2"
+          >
+            <FaPlus />
+            <span>Add Department</span>
+          </button>
+        )}
       </div>
 
       {/* Stats Cards */}
@@ -191,20 +235,24 @@ export default function DepartmentsPage() {
                     )}
                   </div>
                 </div>
-                <div className="flex space-x-2">
-                  <button
-                    onClick={() => handleEdit(dept)}
-                    className="text-blue-600 hover:text-blue-800"
-                  >
-                    <FaEdit />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(dept._id)}
-                    className="text-red-600 hover:text-red-800"
-                  >
-                    <FaTrash />
-                  </button>
-                </div>
+                {canManageDepartments() && (
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => handleEdit(dept)}
+                      className="text-blue-600 hover:text-blue-800 p-2 rounded-lg hover:bg-blue-50 transition-colors"
+                      title="Edit Department"
+                    >
+                      <FaEdit />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(dept._id)}
+                      className="text-red-600 hover:text-red-800 p-2 rounded-lg hover:bg-red-50 transition-colors"
+                      title="Delete Department"
+                    >
+                      <FaTrash />
+                    </button>
+                  </div>
+                )}
               </div>
 
               {dept.description && (
@@ -274,6 +322,24 @@ export default function DepartmentsPage() {
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                     placeholder="Department description"
                   />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Department Head
+                  </label>
+                  <select
+                    value={formData.head}
+                    onChange={(e) => setFormData({ ...formData, head: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  >
+                    <option value="">Select Department Head</option>
+                    {employees.map((employee) => (
+                      <option key={employee._id} value={employee._id}>
+                        {employee.firstName} {employee.lastName} ({employee.employeeCode})
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 

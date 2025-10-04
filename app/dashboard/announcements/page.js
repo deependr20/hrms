@@ -1,14 +1,22 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
-import { FaPlus, FaBullhorn, FaCalendarAlt } from 'react-icons/fa'
+import { FaPlus, FaBullhorn, FaCalendarAlt, FaExclamationTriangle, FaUsers, FaEdit, FaTrash } from 'react-icons/fa'
 
 export default function AnnouncementsPage() {
+  const router = useRouter()
   const [announcements, setAnnouncements] = useState([])
   const [loading, setLoading] = useState(true)
+  const [user, setUser] = useState(null)
 
   useEffect(() => {
+    const userData = localStorage.getItem('user')
+    if (userData) {
+      const parsedUser = JSON.parse(userData)
+      setUser(parsedUser)
+    }
     fetchAnnouncements()
   }, [])
 
@@ -31,6 +39,51 @@ export default function AnnouncementsPage() {
     }
   }
 
+  const handleDelete = async (announcementId) => {
+    if (!confirm('Are you sure you want to delete this announcement?')) return
+
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch(`/api/announcements/${announcementId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` },
+      })
+
+      const data = await response.json()
+      if (data.success) {
+        toast.success('Announcement deleted successfully')
+        fetchAnnouncements()
+      } else {
+        toast.error(data.message || 'Failed to delete announcement')
+      }
+    } catch (error) {
+      console.error('Delete announcement error:', error)
+      toast.error('Failed to delete announcement')
+    }
+  }
+
+  const getPriorityColor = (priority) => {
+    switch (priority) {
+      case 'high': return 'text-red-600 bg-red-50 border-red-200'
+      case 'medium': return 'text-yellow-600 bg-yellow-50 border-yellow-200'
+      case 'low': return 'text-green-600 bg-green-50 border-green-200'
+      default: return 'text-gray-600 bg-gray-50 border-gray-200'
+    }
+  }
+
+  const getPriorityIcon = (priority) => {
+    switch (priority) {
+      case 'high': return FaExclamationTriangle
+      case 'medium': return FaBullhorn
+      case 'low': return FaCalendarAlt
+      default: return FaBullhorn
+    }
+  }
+
+  const canManageAnnouncements = () => {
+    return user && user.role === 'admin'
+  }
+
   return (
     <div className="p-6">
       {/* Header */}
@@ -39,10 +92,15 @@ export default function AnnouncementsPage() {
           <h1 className="text-3xl font-bold text-gray-800">Announcements</h1>
           <p className="text-gray-600 mt-1">Company-wide announcements and updates</p>
         </div>
-        <button className="btn-primary flex items-center space-x-2">
-          <FaPlus />
-          <span>New Announcement</span>
-        </button>
+        {canManageAnnouncements() && (
+          <button
+            onClick={() => router.push('/dashboard/announcements/create')}
+            className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors flex items-center space-x-2"
+          >
+            <FaPlus className="w-4 h-4" />
+            <span>New Announcement</span>
+          </button>
+        )}
       </div>
 
       {/* Announcements List */}

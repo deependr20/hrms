@@ -23,6 +23,8 @@ export default function AddEmployeePage() {
     designation: '',
     employmentType: 'full-time',
     status: 'active',
+    password: '',
+    role: 'employee',
   })
 
   useEffect(() => {
@@ -85,8 +87,15 @@ export default function AddEmployeePage() {
       const data = await response.json()
 
       if (data.success) {
-        toast.success('Employee created successfully')
-        router.push('/dashboard/employees')
+        toast.success('Employee and user account created successfully!')
+        if (data.credentials) {
+          toast.success(`Login: ${data.credentials.email} / ${data.credentials.password}`, {
+            duration: 10000,
+          })
+        }
+        setTimeout(() => {
+          router.push('/dashboard/employees')
+        }, 2000)
       } else {
         toast.error(data.message || 'Failed to create employee')
       }
@@ -309,6 +318,58 @@ export default function AddEmployeePage() {
               <option value="inactive">Inactive</option>
             </select>
           </div>
+
+          {/* Password */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Password <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              placeholder="Enter login password"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              This will be used for employee login. Default: employee123
+            </p>
+          </div>
+
+          {/* Role */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              User Role <span className="text-red-500">*</span>
+            </label>
+            <select
+              name="role"
+              value={formData.role}
+              onChange={handleChange}
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            >
+              <option value="employee">Employee</option>
+              <option value="manager">Manager</option>
+              <option value="hr">HR</option>
+              <option value="admin">Admin</option>
+            </select>
+            <p className="text-xs text-gray-500 mt-1">
+              Determines access level in the system
+            </p>
+          </div>
+        </div>
+
+        {/* Login Credentials Info */}
+        <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <h3 className="text-sm font-semibold text-blue-800 mb-2">
+            📧 Login Credentials
+          </h3>
+          <p className="text-sm text-blue-700">
+            A user account will be automatically created with the email and password provided above.
+            The employee can use these credentials to login and mark attendance.
+          </p>
         </div>
 
         {/* Action Buttons */}

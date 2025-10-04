@@ -138,7 +138,7 @@ function HolidaysTab() {
         <div className="mt-4 space-y-2">
           <div className="p-4 border border-gray-200 rounded-lg flex justify-between items-center">
             <div>
-              <h3 className="font-semibold">New Year's Day</h3>
+              <h3 className="font-semibold">New Year&apos;s Day</h3>
               <p className="text-sm text-gray-500">January 1, 2025</p>
             </div>
             <button className="text-primary-500 hover:text-primary-700">Edit</button>

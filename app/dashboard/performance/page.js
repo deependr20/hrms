@@ -1,93 +1,192 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
-import { FaStar, FaChartLine, FaTrophy } from 'react-icons/fa'
+import {
+  FaChartLine, FaUsers, FaPlus, FaEye, FaEdit, FaAward,
+  FaStar, FaTrophy, FaBullseye, FaCalendarAlt
+} from 'react-icons/fa'
 
 export default function PerformancePage() {
-  const [reviews, setReviews] = useState([])
-  const [loading, setLoading] = useState(true)
+  const router = useRouter()
   const [user, setUser] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [performanceData, setPerformanceData] = useState({
+    reviews: [],
+    goals: [],
+    stats: {
+      totalReviews: 0,
+      completedGoals: 0,
+      averageRating: 0,
+      pendingReviews: 0
+    }
+  })
 
   useEffect(() => {
     const userData = localStorage.getItem('user')
     if (userData) {
       const parsedUser = JSON.parse(userData)
       setUser(parsedUser)
-      fetchReviews(parsedUser.employeeId._id)
+      fetchPerformanceData()
     }
   }, [])
 
-  const fetchReviews = async (employeeId) => {
+  const fetchPerformanceData = async () => {
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch(`/api/performance?employeeId=${employeeId}`, {
-        headers: { 'Authorization': `Bearer ${token}` },
-      })
 
-      const data = await response.json()
-      if (data.success) {
-        setReviews(data.data)
-      }
+      // For now, use mock data since APIs don't exist yet
+      const mockReviews = [
+        {
+          _id: '1',
+          employee: { firstName: 'John', lastName: 'Doe' },
+          reviewPeriod: 'Q4 2024',
+          overallRating: 4,
+          status: 'completed',
+          summary: 'Excellent performance with strong leadership skills'
+        }
+      ]
+
+      const mockGoals = [
+        {
+          _id: '1',
+          title: 'Complete Project Alpha',
+          dueDate: '2025-03-31',
+          status: 'in-progress',
+          progress: 75
+        }
+      ]
+
+      setPerformanceData({
+        reviews: mockReviews,
+        goals: mockGoals,
+        stats: {
+          totalReviews: mockReviews.length,
+          completedGoals: mockGoals.filter(g => g.status === 'completed').length,
+          averageRating: mockReviews.length > 0
+            ? (mockReviews.reduce((sum, r) => sum + (r.overallRating || 0), 0) / mockReviews.length).toFixed(1)
+            : 0,
+          pendingReviews: mockReviews.filter(r => r.status === 'pending').length
+        }
+      })
     } catch (error) {
-      console.error('Fetch reviews error:', error)
-      toast.error('Failed to fetch performance reviews')
+      console.error('Fetch performance data error:', error)
+      toast.error('Failed to fetch performance data')
     } finally {
       setLoading(false)
     }
   }
 
-  const renderStars = (rating) => {
-    return Array.from({ length: 5 }, (_, i) => (
-      <FaStar
-        key={i}
-        className={i < rating ? 'text-yellow-400' : 'text-gray-300'}
-      />
-    ))
+  const canManagePerformance = () => {
+    return user && ['admin', 'hr', 'manager'].includes(user.role)
+  }
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'completed': return 'bg-green-100 text-green-800'
+      case 'in-progress': return 'bg-blue-100 text-blue-800'
+      case 'pending': return 'bg-yellow-100 text-yellow-800'
+      case 'overdue': return 'bg-red-100 text-red-800'
+      default: return 'bg-gray-100 text-gray-800'
+    }
+  }
+
+  const getRatingStars = (rating) => {
+    const stars = []
+    for (let i = 1; i <= 5; i++) {
+      stars.push(
+        <FaStar
+          key={i}
+          className={`w-4 h-4 ${i <= rating ? 'text-yellow-400' : 'text-gray-300'}`}
+        />
+      )
+    }
+    return stars
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
+      </div>
+    )
   }
 
   return (
     <div className="p-6">
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">Performance</h1>
-        <p className="text-gray-600 mt-1">Track your performance reviews and goals</p>
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-800">Performance Management</h1>
+          <p className="text-gray-600 mt-1">Track and manage employee performance</p>
+        </div>
+        {canManagePerformance() && (
+          <div className="flex space-x-3">
+            <button
+              onClick={() => router.push('/dashboard/performance/reviews/create')}
+              className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors flex items-center space-x-2"
+            >
+              <FaPlus className="w-4 h-4" />
+              <span>New Review</span>
+            </button>
+            <button
+              onClick={() => router.push('/dashboard/performance/goals/create')}
+              className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center space-x-2"
+            >
+              <FaBullseye className="w-4 h-4" />
+              <span>Set Goal</span>
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-gray-600">Overall Rating</h3>
-            <FaTrophy className="text-yellow-500" />
-          </div>
-          <div className="flex items-center space-x-2">
-            <div className="text-3xl font-bold text-gray-800">
-              {reviews.length > 0 ? reviews[0]?.overallRating?.toFixed(1) : '0.0'}
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+        {[
+          { title: 'Total Reviews', value: performanceData.stats.totalReviews, icon: FaChartLine, color: 'bg-blue-500' },
+          { title: 'Completed Goals', value: performanceData.stats.completedGoals, icon: FaBullseye, color: 'bg-green-500' },
+          { title: 'Average Rating', value: performanceData.stats.averageRating, icon: FaStar, color: 'bg-yellow-500' },
+          { title: 'Pending Reviews', value: performanceData.stats.pendingReviews, icon: FaAward, color: 'bg-purple-500' },
+        ].map((stat, index) => (
+          <div key={index} className="bg-white rounded-lg shadow-md p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-500 text-sm font-medium">{stat.title}</p>
+                <h3 className="text-2xl font-bold text-gray-900 mt-2">{stat.value}</h3>
+              </div>
+              <div className={`${stat.color} p-4 rounded-lg`}>
+                <stat.icon className="w-6 h-6 text-white" />
+              </div>
             </div>
-            <div className="flex">
-              {renderStars(reviews.length > 0 ? Math.round(reviews[0]?.overallRating || 0) : 0)}
+          </div>
+        ))}
+      </div>
+
+      {/* Quick Actions */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+        {[
+          { name: 'Performance Reviews', icon: FaChartLine, href: '/dashboard/performance/reviews', color: 'bg-blue-500' },
+          { name: 'Goals & Objectives', icon: FaBullseye, href: '/dashboard/performance/goals', color: 'bg-green-500' },
+          { name: 'Employee Ratings', icon: FaStar, href: '/dashboard/performance/ratings', color: 'bg-yellow-500' },
+          { name: 'Performance Reports', icon: FaTrophy, href: '/dashboard/performance/reports', color: 'bg-purple-500' },
+        ].map((action, index) => (
+          <button
+            key={index}
+            onClick={() => router.push(action.href)}
+            className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow cursor-pointer text-left"
+          >
+            <div className="flex items-center space-x-4">
+              <div className={`${action.color} p-3 rounded-lg`}>
+                <action.icon className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900">{action.name}</h3>
+                <p className="text-sm text-gray-500">Manage {action.name.toLowerCase()}</p>
+              </div>
             </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-gray-600">Total Reviews</h3>
-            <FaChartLine className="text-blue-500" />
-          </div>
-          <div className="text-3xl font-bold text-gray-800">{reviews.length}</div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-gray-600">Goals Achieved</h3>
-            <FaTrophy className="text-green-500" />
-          </div>
-          <div className="text-3xl font-bold text-gray-800">
-            {reviews.filter(r => r.goalsAchieved).length}
-          </div>
-        </div>
+          </button>
+        ))}
       </div>
 
       {/* Reviews List */}

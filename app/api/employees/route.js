@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server'
 import connectDB from '@/lib/mongodb'
 import Employee from '@/models/Employee'
+import User from '@/models/User'
 import Department from '@/models/Department'
 import Designation from '@/models/Designation'
+import bcrypt from 'bcryptjs'
 
 // GET - List all employees with filters
 export async function GET(request) {
@@ -92,7 +94,28 @@ export async function POST(request) {
       )
     }
 
+    // Check if user with this email already exists
+    const existingUser = await User.findOne({ email: data.email })
+    if (existingUser) {
+      return NextResponse.json(
+        { success: false, message: 'User account with this email already exists' },
+        { status: 400 }
+      )
+    }
+
+    // Create employee first
     const employee = await Employee.create(data)
+
+    // Create user account for the employee
+    const password = data.password || 'employee123' // Default password if not provided
+    const hashedPassword = await bcrypt.hash(password, 10)
+
+    const user = await User.create({
+      email: data.email,
+      password: hashedPassword,
+      role: data.role || 'employee', // Default role is employee
+      employeeId: employee._id,
+    })
 
     const populatedEmployee = await Employee.findById(employee._id)
       .populate('department', 'name')
@@ -101,8 +124,13 @@ export async function POST(request) {
 
     return NextResponse.json({
       success: true,
-      message: 'Employee created successfully',
+      message: 'Employee and user account created successfully',
       data: populatedEmployee,
+      credentials: {
+        email: data.email,
+        password: data.password || 'employee123',
+        message: 'Please share these credentials with the employee'
+      }
     }, { status: 201 })
   } catch (error) {
     console.error('Create employee error:', error)

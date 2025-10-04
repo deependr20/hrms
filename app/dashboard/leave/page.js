@@ -147,13 +147,22 @@ export default function LeavePage() {
           <h1 className="text-3xl font-bold text-gray-800">Leave Management</h1>
           <p className="text-gray-600 mt-1">Apply and manage your leave requests</p>
         </div>
-        <button
-          onClick={() => setShowModal(true)}
-          className="btn-primary flex items-center space-x-2"
-        >
-          <FaPlus />
-          <span>Apply Leave</span>
-        </button>
+        <div className="flex space-x-3">
+          <button
+            onClick={() => window.location.href = '/dashboard/leave/apply'}
+            className="btn-primary flex items-center space-x-2"
+          >
+            <FaPlus />
+            <span>Apply Leave</span>
+          </button>
+          <button
+            onClick={() => window.location.href = '/dashboard/leave/requests'}
+            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center space-x-2"
+          >
+            <FaCalendarAlt />
+            <span>My Requests</span>
+          </button>
+        </div>
       </div>
 
       {/* Leave Balance Cards */}

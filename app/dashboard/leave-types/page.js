@@ -9,6 +9,7 @@ export default function LeaveTypesPage() {
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [editingType, setEditingType] = useState(null)
+  const [user, setUser] = useState(null)
   const [formData, setFormData] = useState({
     name: '',
     code: '',
@@ -19,7 +20,20 @@ export default function LeaveTypesPage() {
   })
 
   useEffect(() => {
-    fetchLeaveTypes()
+    const userData = localStorage.getItem('user')
+    if (userData) {
+      const parsedUser = JSON.parse(userData)
+      setUser(parsedUser)
+
+      // Check if user has permission (HR or Admin only)
+      if (!['hr', 'admin'].includes(parsedUser.role)) {
+        toast.error('Access denied. Only HR and Admin can manage leave types.')
+        window.location.href = '/dashboard'
+        return
+      }
+
+      fetchLeaveTypes()
+    }
   }, [])
 
   const fetchLeaveTypes = async () => {
