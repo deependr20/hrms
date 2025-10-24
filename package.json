@@ -7,7 +7,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "seed": "node scripts/seed.js"
+    "seed": "node scripts/seed.js",
+    "migrate": "node scripts/migrate-to-atlas.js",
+    "check-env": "node scripts/fix-vercel-env.js",
+    "setup-local": "node scripts/setup-local-env.js",
+    "restore-atlas": "node scripts/restore-atlas-env.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
