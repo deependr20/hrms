@@ -72,6 +72,16 @@ export default function EmployeeCheckinsPage() {
       case 'late': return 'bg-yellow-100 text-yellow-800'
       case 'absent': return 'bg-red-100 text-red-800'
       case 'half-day': return 'bg-blue-100 text-blue-800'
+      case 'in-progress': return 'bg-purple-100 text-purple-800'
+      default: return 'bg-gray-100 text-gray-800'
+    }
+  }
+
+  const getTimingStatusColor = (status) => {
+    switch (status) {
+      case 'on-time': return 'bg-green-100 text-green-800'
+      case 'late': return 'bg-red-100 text-red-800'
+      case 'early': return 'bg-blue-100 text-blue-800'
       default: return 'bg-gray-100 text-gray-800'
     }
   }
@@ -110,7 +120,7 @@ export default function EmployeeCheckinsPage() {
   const stats = {
     total: checkins.length,
     present: checkins.filter(c => c.status === 'present').length,
-    late: checkins.filter(c => c.status === 'late').length,
+    inProgress: checkins.filter(c => c.status === 'in-progress').length,
     absent: checkins.filter(c => c.status === 'absent').length,
   }
 
@@ -152,7 +162,7 @@ export default function EmployeeCheckinsPage() {
         {[
           { title: 'Total Employees', value: stats.total, color: 'bg-blue-500', icon: FaUsers },
           { title: 'Present', value: stats.present, color: 'bg-green-500', icon: FaClock },
-          { title: 'Late', value: stats.late, color: 'bg-yellow-500', icon: FaCalendarAlt },
+          { title: 'In Progress', value: stats.inProgress, color: 'bg-purple-500', icon: FaClock },
           { title: 'Absent', value: stats.absent, color: 'bg-red-500', icon: FaUsers },
         ].map((stat, index) => (
           <div key={index} className="bg-white rounded-lg shadow-md p-6">
@@ -213,7 +223,13 @@ export default function EmployeeCheckinsPage() {
                     Check In
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    In Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Check Out
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Out Status
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Work Hours
@@ -242,8 +258,18 @@ export default function EmployeeCheckinsPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {formatTime(checkin.checkInTime)}
                     </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getTimingStatusColor(checkin.checkInStatus || 'on-time')}`}>
+                        {checkin.checkInStatus || 'on-time'}
+                      </span>
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {formatTime(checkin.checkOutTime)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getTimingStatusColor(checkin.checkOutStatus || 'on-time')}`}>
+                        {checkin.checkOutStatus || 'on-time'}
+                      </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {calculateWorkHours(checkin.checkInTime, checkin.checkOutTime)}

@@ -13,7 +13,7 @@ import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, L
 const employeeStatsData = [
   { title: 'Hours This Month', value: '168', change: '+8h', icon: FaClock, color: 'bg-blue-500', trend: 'up' },
   { title: 'Leave Balance', value: '12 days', change: '-3', icon: FaCalendarAlt, color: 'bg-green-500', trend: 'down' },
-  { title: 'This Month Salary', value: '$4,500', change: '+$200', icon: FaMoneyBillWave, color: 'bg-purple-500', trend: 'up' },
+  { title: 'This Month Salary', value: '₹45,000', change: '+₹2,000', icon: FaMoneyBillWave, color: 'bg-purple-500', trend: 'up' },
   { title: 'Pending Tasks', value: '5', change: '-2', icon: FaFileAlt, color: 'bg-yellow-500', trend: 'down' },
   { title: 'Completed Courses', value: '3', change: '+1', icon: FaGraduationCap, color: 'bg-indigo-500', trend: 'up' },
   { title: 'Performance Score', value: '92%', change: '+5%', icon: FaAward, color: 'bg-teal-500', trend: 'up' },

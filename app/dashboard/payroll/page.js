@@ -43,9 +43,9 @@ export default function PayrollPage() {
   }
 
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'INR',
     }).format(amount || 0)
   }
 
@@ -73,7 +73,7 @@ export default function PayrollPage() {
             <FaMoneyBillWave className="text-green-500" />
           </div>
           <div className="text-3xl font-bold text-gray-800">
-            {payrolls.length > 0 ? formatCurrency(payrolls[0]?.netSalary) : '$0.00'}
+            {payrolls.length > 0 ? formatCurrency(payrolls[0]?.netSalary) : '₹0.00'}
           </div>
         </div>
 
@@ -83,7 +83,7 @@ export default function PayrollPage() {
             <FaMoneyBillWave className="text-blue-500" />
           </div>
           <div className="text-3xl font-bold text-gray-800">
-            {payrolls.length > 0 ? formatCurrency(payrolls[0]?.totalEarnings) : '$0.00'}
+            {payrolls.length > 0 ? formatCurrency(payrolls[0]?.totalEarnings) : '₹0.00'}
           </div>
         </div>
 
@@ -93,7 +93,7 @@ export default function PayrollPage() {
             <FaMoneyBillWave className="text-red-500" />
           </div>
           <div className="text-3xl font-bold text-gray-800">
-            {payrolls.length > 0 ? formatCurrency(payrolls[0]?.totalDeductions) : '$0.00'}
+            {payrolls.length > 0 ? formatCurrency(payrolls[0]?.totalDeductions) : '₹0.00'}
           </div>
         </div>
       </div>

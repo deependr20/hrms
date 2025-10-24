@@ -40,10 +40,12 @@ export async function POST(request) {
       )
     }
 
-    // Check password
-    const isPasswordMatch = await user.comparePassword(password)
+    // Check password - TEMPORARILY USING PLAIN TEXT COMPARISON FOR TESTING
+    const isPasswordMatch = user.password === password
 
     console.log('Password match:', isPasswordMatch)
+    console.log('Stored password:', user.password)
+    console.log('Entered password:', password)
 
     if (!isPasswordMatch) {
       return NextResponse.json(

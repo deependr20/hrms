@@ -154,8 +154,8 @@ export default function LeaveAllocationsPage() {
   }
 
   const getEmployeeBalance = (employeeId, leaveTypeId) => {
-    return leaveBalances.find(balance => 
-      balance.employee._id === employeeId && balance.leaveType._id === leaveTypeId
+    return leaveBalances.find(balance =>
+      balance.employee?._id === employeeId && balance.leaveType?._id === leaveTypeId
     )
   }
 
@@ -164,14 +164,16 @@ export default function LeaveAllocationsPage() {
     csvData.push(['Employee Code', 'Employee Name', 'Leave Type', 'Total Days', 'Used Days', 'Remaining Days'])
     
     leaveBalances.forEach(balance => {
-      csvData.push([
-        balance.employee.employeeCode,
-        `${balance.employee.firstName} ${balance.employee.lastName}`,
-        balance.leaveType.name,
-        balance.totalDays,
-        balance.usedDays,
-        balance.remainingDays
-      ])
+      if (balance.employee && balance.leaveType) {
+        csvData.push([
+          balance.employee.employeeCode || 'N/A',
+          `${balance.employee.firstName || ''} ${balance.employee.lastName || ''}`,
+          balance.leaveType.name || 'N/A',
+          balance.totalDays || 0,
+          balance.usedDays || 0,
+          balance.remainingDays || 0
+        ])
+      }
     })
 
     const csvContent = csvData.map(row => row.join(',')).join('\n')

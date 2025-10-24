@@ -71,8 +71,10 @@ export async function GET(request) {
             department: employee.department
           },
           date: attendance.date,
-          checkInTime: attendance.checkInTime,
-          checkOutTime: attendance.checkOutTime,
+          checkInTime: attendance.checkIn,
+          checkOutTime: attendance.checkOut,
+          checkInStatus: attendance.checkInStatus,
+          checkOutStatus: attendance.checkOutStatus,
           status: attendance.status,
           workHours: attendance.workHours,
           notes: attendance.notes
@@ -92,6 +94,8 @@ export async function GET(request) {
           date: targetDate,
           checkInTime: null,
           checkOutTime: null,
+          checkInStatus: null,
+          checkOutStatus: null,
           status: 'absent',
           workHours: 0,
           notes: 'No attendance record'
@@ -99,9 +103,9 @@ export async function GET(request) {
       }
     })
 
-    // Sort by status (present first, then late, then absent)
+    // Sort by status (in-progress first, then present, then half-day, then absent)
     checkinData.sort((a, b) => {
-      const statusOrder = { 'present': 1, 'late': 2, 'half-day': 3, 'absent': 4 }
+      const statusOrder = { 'in-progress': 1, 'present': 2, 'half-day': 3, 'absent': 4 }
       return statusOrder[a.status] - statusOrder[b.status]
     })
 
@@ -111,7 +115,7 @@ export async function GET(request) {
       summary: {
         total: checkinData.length,
         present: checkinData.filter(c => c.status === 'present').length,
-        late: checkinData.filter(c => c.status === 'late').length,
+        inProgress: checkinData.filter(c => c.status === 'in-progress').length,
         absent: checkinData.filter(c => c.status === 'absent').length,
         halfDay: checkinData.filter(c => c.status === 'half-day').length,
         date: targetDate.toISOString()

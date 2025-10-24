@@ -102,6 +102,7 @@ export const roleBasedMenus = {
       ]
     },
     { name: 'Holidays', icon: FaCalendarAlt, path: '/dashboard/holidays' },
+    { name: 'Users Management', icon: FaUser, path: '/dashboard/users' },
     {
       name: 'Settings',
       icon: FaCog,

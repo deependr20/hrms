@@ -154,14 +154,12 @@ async function seedDatabase() {
 
     console.log('✅ Employees created successfully!');
 
-    // Create users with hashed passwords
-    console.log('🔐 Creating users with hashed passwords...');
-
-    const salt = await bcrypt.genSalt(10);
+    // Create users with plain text passwords (for testing)
+    console.log('🔐 Creating users with plain text passwords...');
 
     await User.create({
       email: 'admin@hrms.com',
-      password: await bcrypt.hash('admin123', salt),
+      password: 'admin123',
       role: 'admin',
       employeeId: adminEmployee._id,
       isActive: true,
@@ -169,7 +167,7 @@ async function seedDatabase() {
 
     await User.create({
       email: 'hr@hrms.com',
-      password: await bcrypt.hash('hr123', salt),
+      password: 'hr123',
       role: 'hr',
       employeeId: hrEmployee._id,
       isActive: true,
@@ -177,7 +175,7 @@ async function seedDatabase() {
 
     await User.create({
       email: 'manager@hrms.com',
-      password: await bcrypt.hash('manager123', salt),
+      password: 'manager123',
       role: 'manager',
       employeeId: managerEmployee._id,
       isActive: true,
@@ -185,7 +183,7 @@ async function seedDatabase() {
 
     await User.create({
       email: 'employee@hrms.com',
-      password: await bcrypt.hash('employee123', salt),
+      password: 'employee123',
       role: 'employee',
       employeeId: employeeUser._id,
       isActive: true,

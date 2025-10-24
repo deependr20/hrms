@@ -76,16 +76,35 @@ export async function POST(request) {
         )
       }
 
+      const checkInTime = new Date()
+
+      // Office timing: 11:00 AM to 7:00 PM
+      const officeStartTime = new Date(checkInTime)
+      officeStartTime.setHours(11, 0, 0, 0) // 11:00 AM
+
+      const officeEndTime = new Date(checkInTime)
+      officeEndTime.setHours(19, 0, 0, 0) // 7:00 PM
+
+      // Determine check-in status
+      let checkInStatus = 'on-time'
+      if (checkInTime < officeStartTime) {
+        checkInStatus = 'early'
+      } else if (checkInTime > officeStartTime) {
+        checkInStatus = 'late'
+      }
+
       if (!attendance) {
         attendance = await Attendance.create({
           employee: employeeId,
           date: new Date(),
-          checkIn: new Date(),
-          status: 'present',
+          checkIn: checkInTime,
+          checkInStatus: checkInStatus,
+          status: 'in-progress', // Status will be determined on checkout
         })
       } else {
-        attendance.checkIn = new Date()
-        attendance.status = 'present'
+        attendance.checkIn = checkInTime
+        attendance.checkInStatus = checkInStatus
+        attendance.status = 'in-progress' // Status will be determined on checkout
         await attendance.save()
       }
 
@@ -109,14 +128,40 @@ export async function POST(request) {
         )
       }
 
-      attendance.checkOut = new Date()
-      
+      const checkOutTime = new Date()
+      attendance.checkOut = checkOutTime
+
+      // Office end time: 7:00 PM
+      const officeEndTime = new Date(checkOutTime)
+      officeEndTime.setHours(19, 0, 0, 0) // 7:00 PM
+
+      // Determine check-out status
+      let checkOutStatus = 'on-time'
+      if (checkOutTime < officeEndTime) {
+        checkOutStatus = 'early'
+      } else if (checkOutTime > officeEndTime) {
+        checkOutStatus = 'late'
+      }
+
+      attendance.checkOutStatus = checkOutStatus
+
       // Calculate work hours
       const checkIn = new Date(attendance.checkIn)
       const checkOut = new Date(attendance.checkOut)
       const diffMs = checkOut - checkIn
       const diffHrs = diffMs / (1000 * 60 * 60)
       attendance.workHours = parseFloat(diffHrs.toFixed(2))
+
+      // Determine attendance status based on work hours
+      // Shift: 11 AM to 7 PM (8 hours)
+      // Present: 8+ hours, Half-day: 4-7.99 hours, Absent: <4 hours
+      if (attendance.workHours >= 8) {
+        attendance.status = 'present'
+      } else if (attendance.workHours >= 4) {
+        attendance.status = 'half-day'
+      } else {
+        attendance.status = 'absent'
+      }
 
       await attendance.save()
 
