@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { FaBars, FaBell, FaUser, FaSignOutAlt, FaCog, FaSearch } from 'react-icons/fa'
 import toast from 'react-hot-toast'
+import { PWAStatus } from '@/components/PWAInstaller'
 
 export default function Header({ toggleSidebar }) {
   const router = useRouter()
@@ -52,6 +53,9 @@ export default function Header({ toggleSidebar }) {
 
         {/* Right side */}
         <div className="flex items-center space-x-2 sm:space-x-4">
+          {/* PWA Status */}
+          <PWAStatus />
+
           {/* Notifications */}
           <div className="relative mt-3 md:mt-0">
             <button
