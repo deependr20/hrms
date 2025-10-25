@@ -16,8 +16,15 @@ RUN npm ci
 # Copy source code
 COPY . .
 
-# Copy environment file if it exists
+# Copy environment files
 COPY .env* ./
+
+# Set default environment variables for build (will be overridden by .env file)
+ENV NODE_ENV=production
+ENV MONGODB_URI=""
+ENV JWT_SECRET=""
+ENV NEXTAUTH_SECRET=""
+ENV NEXTAUTH_URL=""
 
 # Build the application
 RUN npm run build
