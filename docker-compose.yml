@@ -1,6 +1,14 @@
 services:
   hrms-app:
-    build: .
+    build:
+      context: .
+      args:
+        - MONGODB_URI=${MONGODB_URI}
+        - JWT_SECRET=${JWT_SECRET}
+        - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+        - NEXTAUTH_URL=${NEXTAUTH_URL}
+        - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL:-http://199.59.27.50}
+        - NEXT_PUBLIC_APP_NAME=${NEXT_PUBLIC_APP_NAME:-HRMS System}
     ports:
       - "3000:3000"
     env_file:

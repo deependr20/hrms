@@ -22,12 +22,22 @@ COPY .env* ./
 # Create .env.local from .env for Next.js build process
 RUN if [ -f .env ]; then cp .env .env.local; fi
 
-# Set default environment variables for build (will be overridden by .env files)
+# Set build-time environment variables
+ARG MONGODB_URI
+ARG JWT_SECRET
+ARG NEXTAUTH_SECRET
+ARG NEXTAUTH_URL
+ARG NEXT_PUBLIC_APP_URL
+ARG NEXT_PUBLIC_APP_NAME
+
+# Set environment variables for build
 ENV NODE_ENV=production
-ENV MONGODB_URI=""
-ENV JWT_SECRET=""
-ENV NEXTAUTH_SECRET=""
-ENV NEXTAUTH_URL=""
+ENV MONGODB_URI=${MONGODB_URI}
+ENV JWT_SECRET=${JWT_SECRET}
+ENV NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+ENV NEXTAUTH_URL=${NEXTAUTH_URL}
+ENV NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
+ENV NEXT_PUBLIC_APP_NAME=${NEXT_PUBLIC_APP_NAME}
 
 # Build the application
 RUN npm run build
