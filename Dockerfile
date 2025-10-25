@@ -10,20 +10,20 @@ RUN apk add --no-cache libc6-compat
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production
+# Install ALL dependencies (including devDependencies for build)
+RUN npm ci
 
 # Copy source code
 COPY . .
 
-# Create .env.local from environment variables
-RUN echo "MONGODB_URI=\${MONGODB_URI}" > .env.local && \
-    echo "JWT_SECRET=\${JWT_SECRET}" >> .env.local && \
-    echo "NEXTAUTH_SECRET=\${NEXTAUTH_SECRET}" >> .env.local && \
-    echo "NEXTAUTH_URL=\${NEXTAUTH_URL}" >> .env.local
+# Copy environment file if it exists
+COPY .env* ./
 
 # Build the application
 RUN npm run build
+
+# Remove devDependencies after build to reduce image size
+RUN npm prune --production
 
 # Expose port
 EXPOSE 3000
