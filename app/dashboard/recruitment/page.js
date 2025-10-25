@@ -32,35 +32,35 @@ export default function RecruitmentPage() {
   }
 
   return (
-    <div className="p-6">
+    <div className="page-container space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-3 sm:space-y-0">
         <div>
-          <h1 className="text-3xl font-bold text-gray-800">Recruitment</h1>
-          <p className="text-gray-600 mt-1">Manage job postings and candidates</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Recruitment</h1>
+          <p className="text-gray-600 mt-1 text-sm sm:text-base">Manage job postings and candidates</p>
         </div>
-        <button className="btn-primary flex items-center space-x-2">
-          <FaPlus />
+        <button className="btn-primary flex items-center justify-center space-x-2 w-full sm:w-auto">
+          <FaPlus className="w-4 h-4" />
           <span>Post Job</span>
         </button>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white rounded-lg shadow-md p-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="bg-white rounded-lg shadow-md p-3 sm:p-6">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-gray-600">Total Jobs</h3>
-            <FaBriefcase className="text-primary-500" />
+            <h3 className="text-xs sm:text-sm font-medium text-gray-600 truncate">Total Jobs</h3>
+            <FaBriefcase className="text-primary-500 flex-shrink-0" />
           </div>
-          <div className="text-3xl font-bold text-gray-800">{jobs.length}</div>
+          <div className="text-2xl sm:text-3xl font-bold text-gray-800">{jobs.length}</div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="bg-white rounded-lg shadow-md p-3 sm:p-6">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-gray-600">Active Jobs</h3>
-            <FaBriefcase className="text-green-500" />
+            <h3 className="text-xs sm:text-sm font-medium text-gray-600 truncate">Active Jobs</h3>
+            <FaBriefcase className="text-green-500 flex-shrink-0" />
           </div>
-          <div className="text-3xl font-bold text-gray-800">
+          <div className="text-2xl sm:text-3xl font-bold text-gray-800">
             {jobs.filter(j => j.status === 'open').length}
           </div>
         </div>

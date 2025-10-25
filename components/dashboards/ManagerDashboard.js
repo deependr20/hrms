@@ -35,35 +35,35 @@ const performanceData = [
 
 export default function ManagerDashboard({ user }) {
   return (
-    <div className="space-y-6">
+    <div className="page-container space-y-6">
       {/* Welcome Section */}
-      <div className="bg-gradient-to-r from-purple-500 to-indigo-600 rounded-lg p-6 text-white">
-        <h1 className="text-3xl font-bold mb-2">Manager Dashboard 👨‍💼</h1>
-        <p className="text-purple-100">Lead your team to success and track performance</p>
+      <div className="bg-gradient-to-r from-purple-500 to-indigo-600 rounded-lg p-3 sm:p-6 text-white">
+        <h1 className="text-2xl sm:text-3xl font-bold mb-2">Manager Dashboard 👨‍💼</h1>
+        <p className="text-purple-100 text-sm sm:text-base">Lead your team to success and track performance</p>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
         {managerStatsData.map((stat, index) => (
-          <div key={index} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+          <div key={index} className="bg-white rounded-lg shadow-md p-3 sm:p-6 hover:shadow-lg transition-shadow">
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500 text-sm font-medium">{stat.title}</p>
-                <h3 className="text-2xl font-bold text-gray-900 mt-2">{stat.value}</h3>
-                <div className="flex items-center mt-2">
+              <div className="flex-1 min-w-0">
+                <p className="text-gray-500 text-xs sm:text-sm font-medium truncate">{stat.title}</p>
+                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mt-1 sm:mt-2">{stat.value}</h3>
+                <div className="flex items-center mt-1 sm:mt-2">
                   {stat.trend === 'up' ? (
-                    <FaArrowUp className="w-4 h-4 text-green-500 mr-1" />
+                    <FaArrowUp className="w-3 h-3 sm:w-4 sm:h-4 text-green-500 mr-1 flex-shrink-0" />
                   ) : (
-                    <FaArrowDown className="w-4 h-4 text-red-500 mr-1" />
+                    <FaArrowDown className="w-3 h-3 sm:w-4 sm:h-4 text-red-500 mr-1 flex-shrink-0" />
                   )}
-                  <span className={`text-sm font-medium ${stat.trend === 'up' ? 'text-green-500' : 'text-red-500'}`}>
+                  <span className={`text-xs sm:text-sm font-medium truncate ${stat.trend === 'up' ? 'text-green-500' : 'text-red-500'}`}>
                     {stat.change}
                   </span>
-                  <span className="text-gray-500 text-sm ml-1">vs last month</span>
+                  <span className="text-gray-500 text-xs sm:text-sm ml-1 hidden sm:inline">vs last month</span>
                 </div>
               </div>
-              <div className={`${stat.color} p-4 rounded-lg`}>
-                <stat.icon className="w-8 h-8 text-white" />
+              <div className={`${stat.color} p-2 sm:p-4 rounded-lg flex-shrink-0`}>
+                <stat.icon className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
               </div>
             </div>
           </div>

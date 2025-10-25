@@ -152,29 +152,29 @@ export default function DesignationsPage() {
       </div>
 
       {/* Stats Card */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-white rounded-lg shadow-md p-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
+        <div className="bg-white rounded-lg shadow-md p-3 sm:p-6">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-gray-600">Total Designations</h3>
-            <FaBriefcase className="text-primary-500" />
+            <h3 className="text-xs sm:text-sm font-medium text-gray-600 truncate">Total Designations</h3>
+            <FaBriefcase className="text-primary-500 flex-shrink-0" />
           </div>
-          <div className="text-3xl font-bold text-gray-800">{designations.length}</div>
+          <div className="text-2xl sm:text-3xl font-bold text-gray-800">{designations.length}</div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="bg-white rounded-lg shadow-md p-3 sm:p-6">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-gray-600">Departments</h3>
-            <FaBriefcase className="text-green-500" />
+            <h3 className="text-xs sm:text-sm font-medium text-gray-600 truncate">Departments</h3>
+            <FaBriefcase className="text-green-500 flex-shrink-0" />
           </div>
-          <div className="text-3xl font-bold text-gray-800">{departments.length}</div>
+          <div className="text-2xl sm:text-3xl font-bold text-gray-800">{departments.length}</div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="bg-white rounded-lg shadow-md p-3 sm:p-6">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-gray-600">Active Roles</h3>
-            <FaBriefcase className="text-blue-500" />
+            <h3 className="text-xs sm:text-sm font-medium text-gray-600 truncate">Active Roles</h3>
+            <FaBriefcase className="text-blue-500 flex-shrink-0" />
           </div>
-          <div className="text-3xl font-bold text-gray-800">
+          <div className="text-2xl sm:text-3xl font-bold text-gray-800">
             {designations.filter(d => d.isActive !== false).length}
           </div>
         </div>

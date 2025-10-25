@@ -183,20 +183,18 @@ export default function ApplyLeavePage() {
   }
 
   return (
-    <div className="p-6">
+    <div className="page-container space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center space-x-4">
-          <button
-            onClick={() => router.back()}
-            className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <FaArrowLeft className="w-5 h-5" />
-          </button>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-800">Apply for Leave</h1>
-            <p className="text-gray-600 mt-1">Submit your leave application for approval</p>
-          </div>
+      <div className="flex items-center space-x-3 sm:space-x-4">
+        <button
+          onClick={() => router.back()}
+          className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
+        >
+          <FaArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+        </button>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 truncate">Apply for Leave</h1>
+          <p className="text-gray-600 mt-1 text-sm sm:text-base">Submit your leave application for approval</p>
         </div>
       </div>
 

@@ -154,18 +154,18 @@ export default function AttendanceReportPage() {
   }
 
   return (
-    <div className="p-6">
+    <div className="page-container">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 space-y-3 sm:space-y-0">
         <div>
-          <h1 className="text-3xl font-bold text-gray-800">Attendance Report</h1>
-          <p className="text-gray-600 mt-1">Detailed analysis of your attendance patterns</p>
+          <h1 className="page-title text-zinc-900">Attendance Report</h1>
+          <p className="page-subtitle text-zinc-900">Detailed analysis of your attendance patterns</p>
         </div>
-        <div className="flex items-center space-x-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
           <select
             value={selectedMonth}
             onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            className="w-full sm:w-auto px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
           >
             {Array.from({ length: 12 }, (_, i) => (
               <option key={i + 1} value={i + 1}>
@@ -176,7 +176,7 @@ export default function AttendanceReportPage() {
           <select
             value={selectedYear}
             onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            className="w-full sm:w-auto px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
           >
             {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map(year => (
               <option key={year} value={year}>{year}</option>
@@ -184,30 +184,30 @@ export default function AttendanceReportPage() {
           </select>
           <button
             onClick={exportReport}
-            className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors flex items-center space-x-2"
+            className="btn bg-primary-500 px-4 py-2 text-white rounded-lg hover:bg-primary-600 transition-colors flex items-center justify-center space-x-2"
           >
-            <FaDownload className="w-4 h-4" />
-            <span>Export</span>
+            <FaDownload className="icon" />
+            <span className="text-sm ">Export</span>
           </button>
         </div>
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
         {[
           { title: 'Total Days', value: summary.totalDays, color: 'bg-blue-500', icon: FaCalendarAlt },
           { title: 'Present Days', value: summary.presentDays, color: 'bg-green-500', icon: FaClock },
           { title: 'Total Hours', value: `${summary.totalHours}h`, color: 'bg-purple-500', icon: FaChartLine },
           { title: 'Attendance %', value: `${summary.attendancePercentage}%`, color: 'bg-indigo-500', icon: FaChartLine },
         ].map((stat, index) => (
-          <div key={index} className="bg-white rounded-lg shadow-md p-6">
+          <div key={index} className="stats-card p-4 bg-white rounded-lg shadow-md">
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500 text-sm font-medium">{stat.title}</p>
-                <h3 className="text-2xl font-bold text-gray-900 mt-2">{stat.value}</h3>
+              <div className="flex-1 min-w-0">
+                <p className="stats-label text-gray-500 font-medium truncate">{stat.title}</p>
+                <h3 className="stats-value text-gray-900 font-bold mt-1 truncate">{stat.value}</h3>
               </div>
-              <div className={`${stat.color} p-4 rounded-lg`}>
-                <stat.icon className="w-6 h-6 text-white" />
+              <div className={`${stat.color} p-2 rounded-lg flex-shrink-0`}>
+                <stat.icon className="icon-lg text-white" />
               </div>
             </div>
           </div>
@@ -215,25 +215,28 @@ export default function AttendanceReportPage() {
       </div>
 
       {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-4">
         {/* Daily Hours Chart */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Daily Working Hours</h3>
-          <ResponsiveContainer width="100%" height={300}>
+        <div className="bg-white rounded-lg shadow-md p-4 chart-container">
+          <h3 className="text-base font-semibold text-gray-900 mb-3">Daily Working Hours</h3>
+          <ResponsiveContainer width="100%" height={200}>
             <BarChart data={getChartData()}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" />
-              <YAxis />
-              <Tooltip />
+              <XAxis dataKey="date" fontSize={12} />
+              <YAxis fontSize={12} />
+              <Tooltip
+                labelStyle={{ fontSize: '12px' }}
+                contentStyle={{ fontSize: '12px' }}
+              />
               <Bar dataKey="hours" fill="#8b5cf6" name="Hours Worked" />
             </BarChart>
           </ResponsiveContainer>
         </div>
 
         {/* Status Distribution */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Attendance Status Distribution</h3>
-          <ResponsiveContainer width="100%" height={300}>
+        <div className="bg-white rounded-lg shadow-md p-4 chart-container">
+          <h3 className="text-base font-semibold text-gray-900 mb-3">Attendance Status Distribution</h3>
+          <ResponsiveContainer width="100%" height={200}>
             <PieChart>
               <Pie
                 data={getStatusDistribution()}
@@ -241,7 +244,7 @@ export default function AttendanceReportPage() {
                 cy="50%"
                 labelLine={false}
                 label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                outerRadius={100}
+                outerRadius={80}
                 fill="#8884d8"
                 dataKey="value"
               >
@@ -249,39 +252,42 @@ export default function AttendanceReportPage() {
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
               </Pie>
-              <Tooltip />
+              <Tooltip
+                labelStyle={{ fontSize: '12px' }}
+                contentStyle={{ fontSize: '12px' }}
+              />
             </PieChart>
           </ResponsiveContainer>
         </div>
       </div>
 
       {/* Detailed Summary */}
-      <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Monthly Summary</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+      <div className="bg-white rounded-lg shadow-md p-3 sm:p-6 mb-4">
+        <h3 className="text-base font-semibold text-gray-900 mb-3">Monthly Summary</h3>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">{summary.presentDays}</div>
-            <div className="text-sm text-gray-500">Present Days</div>
+            <div className="text-lg sm:text-xl font-bold text-green-600">{summary.presentDays}</div>
+            <div className="text-xs sm:text-sm text-gray-500">Present Days</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-red-600">{summary.absentDays}</div>
-            <div className="text-sm text-gray-500">Absent Days</div>
+            <div className="text-lg sm:text-xl font-bold text-red-600">{summary.absentDays}</div>
+            <div className="text-xs sm:text-sm text-gray-500">Absent Days</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-yellow-600">{summary.lateDays}</div>
-            <div className="text-sm text-gray-500">Late Days</div>
+            <div className="text-lg sm:text-xl font-bold text-yellow-600">{summary.lateDays}</div>
+            <div className="text-xs sm:text-sm text-gray-500">Late Days</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-purple-600">{summary.halfDays}</div>
-            <div className="text-sm text-gray-500">Half Days</div>
+            <div className="text-lg sm:text-xl font-bold text-purple-600">{summary.halfDays}</div>
+            <div className="text-xs sm:text-sm text-gray-500">Half Days</div>
           </div>
         </div>
       </div>
 
       {/* Detailed Attendance Records */}
       <div className="bg-white rounded-lg shadow-md">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">
+        <div className="px-3 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
+          <h3 className="text-base font-semibold text-gray-900">
             Detailed Records - {getMonthName(selectedMonth)} {selectedYear}
           </h3>
         </div>
@@ -291,7 +297,7 @@ export default function AttendanceReportPage() {
             <p>No attendance records found for the selected period</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="table-container">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>

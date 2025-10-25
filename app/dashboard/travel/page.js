@@ -38,35 +38,35 @@ export default function TravelPage() {
   }
 
   return (
-    <div className="p-6">
+    <div className="page-container space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-3 sm:space-y-0">
         <div>
-          <h1 className="text-3xl font-bold text-gray-800">Travel</h1>
-          <p className="text-gray-600 mt-1">Manage your business travel requests</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Travel</h1>
+          <p className="text-gray-600 mt-1 text-sm sm:text-base">Manage your business travel requests</p>
         </div>
-        <button className="btn-primary flex items-center space-x-2">
-          <FaPlus />
+        <button className="btn-primary flex items-center justify-center space-x-2 w-full sm:w-auto">
+          <FaPlus className="w-4 h-4" />
           <span>New Travel Request</span>
         </button>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-white rounded-lg shadow-md p-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+        <div className="bg-white rounded-lg shadow-md p-3 sm:p-6">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-gray-600">Total Trips</h3>
-            <FaPlane className="text-primary-500" />
+            <h3 className="text-xs sm:text-sm font-medium text-gray-600 truncate">Total Trips</h3>
+            <FaPlane className="text-primary-500 flex-shrink-0" />
           </div>
-          <div className="text-3xl font-bold text-gray-800">{travels.length}</div>
+          <div className="text-2xl sm:text-3xl font-bold text-gray-800">{travels.length}</div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="bg-white rounded-lg shadow-md p-3 sm:p-6">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-gray-600">Approved</h3>
-            <FaCheckCircle className="text-green-500" />
+            <h3 className="text-xs sm:text-sm font-medium text-gray-600 truncate">Approved</h3>
+            <FaCheckCircle className="text-green-500 flex-shrink-0" />
           </div>
-          <div className="text-3xl font-bold text-gray-800">
+          <div className="text-2xl sm:text-3xl font-bold text-gray-800">
             {travels.filter(t => t.status === 'approved').length}
           </div>
         </div>

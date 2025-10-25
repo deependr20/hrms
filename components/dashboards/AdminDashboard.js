@@ -147,7 +147,7 @@ export default function AdminDashboard({ user }) {
   const statsData = getStatsData()
 
   return (
-    <div className="space-y-6">
+    <div className="page-container space-y-6">
       {/* Welcome Section */}
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-6 text-white">
         <h1 className="text-3xl font-bold mb-2">Admin Dashboard 👑</h1>
@@ -171,20 +171,20 @@ export default function AdminDashboard({ user }) {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
         {statsData.map((stat, index) => (
           <div
             key={index}
-            className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow cursor-pointer"
+            className="bg-white rounded-lg shadow-md p-3 sm:p-6 hover:shadow-lg transition-shadow cursor-pointer"
             onClick={() => router.push(stat.href)}
           >
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500 text-sm font-medium">{stat.title}</p>
-                <h3 className="text-2xl font-bold text-gray-900 mt-2">{stat.value}</h3>
+              <div className="flex-1 min-w-0">
+                <p className="text-gray-500 text-xs sm:text-sm font-medium truncate">{stat.title}</p>
+                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mt-1 sm:mt-2 truncate">{stat.value}</h3>
               </div>
-              <div className={`${stat.color} p-4 rounded-lg`}>
-                <stat.icon className="w-8 h-8 text-white" />
+              <div className={`${stat.color} p-2 sm:p-4 rounded-lg flex-shrink-0`}>
+                <stat.icon className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
               </div>
             </div>
           </div>

@@ -133,46 +133,46 @@ export default function EmployeeCheckinsPage() {
   }
 
   return (
-    <div className="p-6">
+    <div className="page-container space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-3 sm:space-y-0">
         <div>
-          <h1 className="text-3xl font-bold text-gray-800">Employee Check-ins</h1>
-          <p className="text-gray-600 mt-1">Monitor real-time employee attendance</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Employee Check-ins</h1>
+          <p className="text-gray-600 mt-1 text-sm sm:text-base">Monitor real-time employee attendance</p>
         </div>
-        <div className="flex space-x-3">
+        <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
           <input
             type="date"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            className="px-3 py-2 sm:px-4 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm sm:text-base"
           />
           <button
             onClick={exportCheckins}
-            className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center space-x-2"
+            className="px-3 py-2 sm:px-4 sm:py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center justify-center space-x-2 text-sm sm:text-base"
           >
-            <FaDownload className="w-4 h-4" />
+            <FaDownload className="w-3 h-3 sm:w-4 sm:h-4" />
             <span>Export</span>
           </button>
         </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
         {[
           { title: 'Total Employees', value: stats.total, color: 'bg-blue-500', icon: FaUsers },
           { title: 'Present', value: stats.present, color: 'bg-green-500', icon: FaClock },
           { title: 'In Progress', value: stats.inProgress, color: 'bg-purple-500', icon: FaClock },
           { title: 'Absent', value: stats.absent, color: 'bg-red-500', icon: FaUsers },
         ].map((stat, index) => (
-          <div key={index} className="bg-white rounded-lg shadow-md p-6">
+          <div key={index} className="bg-white rounded-lg shadow-md p-3 sm:p-6">
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500 text-sm font-medium">{stat.title}</p>
-                <h3 className="text-2xl font-bold text-gray-900 mt-2">{stat.value}</h3>
+              <div className="flex-1 min-w-0">
+                <p className="text-gray-500 text-xs sm:text-sm font-medium truncate">{stat.title}</p>
+                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mt-1 sm:mt-2">{stat.value}</h3>
               </div>
-              <div className={`${stat.color} p-4 rounded-lg`}>
-                <stat.icon className="w-6 h-6 text-white" />
+              <div className={`${stat.color} p-2 sm:p-4 rounded-lg flex-shrink-0`}>
+                <stat.icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
             </div>
           </div>

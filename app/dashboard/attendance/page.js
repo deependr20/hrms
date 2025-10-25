@@ -151,7 +151,7 @@ export default function AttendancePage() {
   }
 
   return (
-    <div className="p-6">
+    <div className="page-container">
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-800">Attendance</h1>
@@ -186,7 +186,7 @@ export default function AttendancePage() {
             <button
               onClick={handleClockIn}
               disabled={loading || (todayAttendance && todayAttendance.checkIn)}
-              className="btn-primary flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-primary flex items-center p-8 space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <FaSignInAlt />
               <span>Clock In</span>

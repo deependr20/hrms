@@ -176,96 +176,96 @@ export default function DepartmentsPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-white rounded-lg shadow-md p-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
+        <div className="bg-white rounded-lg shadow-md p-3 sm:p-6">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-gray-600">Total Departments</h3>
-            <FaBuilding className="text-primary-500" />
+            <h3 className="text-xs sm:text-sm font-medium text-gray-600 truncate">Total Departments</h3>
+            <FaBuilding className="text-primary-500 flex-shrink-0" />
           </div>
-          <div className="text-3xl font-bold text-gray-800">{departments.length}</div>
+          <div className="text-2xl sm:text-3xl font-bold text-gray-800">{departments.length}</div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="bg-white rounded-lg shadow-md p-3 sm:p-6">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-gray-600">Active Departments</h3>
-            <FaBuilding className="text-green-500" />
+            <h3 className="text-xs sm:text-sm font-medium text-gray-600 truncate">Active Departments</h3>
+            <FaBuilding className="text-green-500 flex-shrink-0" />
           </div>
-          <div className="text-3xl font-bold text-gray-800">
+          <div className="text-2xl sm:text-3xl font-bold text-gray-800">
             {departments.filter(d => d.isActive !== false).length}
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="bg-white rounded-lg shadow-md p-3 sm:p-6">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-gray-600">Total Employees</h3>
-            <FaUsers className="text-blue-500" />
+            <h3 className="text-xs sm:text-sm font-medium text-gray-600 truncate">Total Employees</h3>
+            <FaUsers className="text-blue-500 flex-shrink-0" />
           </div>
-          <div className="text-3xl font-bold text-gray-800">
+          <div className="text-2xl sm:text-3xl font-bold text-gray-800">
             {departments.reduce((sum, d) => sum + (d.employeeCount || 0), 0)}
           </div>
         </div>
       </div>
 
       {/* Departments Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         {loading ? (
-          <div className="col-span-full bg-white rounded-lg shadow-md p-8 text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading departments...</p>
+          <div className="col-span-full bg-white rounded-lg shadow-md p-6 sm:p-8 text-center">
+            <div className="animate-spin rounded-full h-8 w-8 sm:h-12 sm:w-12 border-b-2 border-primary-500 mx-auto"></div>
+            <p className="mt-4 text-gray-600 text-sm sm:text-base">Loading departments...</p>
           </div>
         ) : departments.length === 0 ? (
-          <div className="col-span-full bg-white rounded-lg shadow-md p-8 text-center text-gray-500">
+          <div className="col-span-full bg-white rounded-lg shadow-md p-6 sm:p-8 text-center text-gray-500">
             No departments found
           </div>
         ) : (
           departments.map((dept) => (
             <div
               key={dept._id}
-              className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow"
+              className="bg-white rounded-lg shadow-md p-3 sm:p-6 hover:shadow-lg transition-shadow"
             >
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center space-x-3">
-                  <div className="bg-primary-100 p-3 rounded-lg">
-                    <FaBuilding className="text-primary-500 text-xl" />
+              <div className="flex items-start justify-between mb-3 sm:mb-4">
+                <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
+                  <div className="bg-primary-100 p-2 sm:p-3 rounded-lg flex-shrink-0">
+                    <FaBuilding className="text-primary-500 text-lg sm:text-xl" />
                   </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-gray-800">{dept.name}</h3>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-base sm:text-lg font-bold text-gray-800 truncate">{dept.name}</h3>
                     {dept.code && (
-                      <p className="text-sm text-gray-500">{dept.code}</p>
+                      <p className="text-xs sm:text-sm text-gray-500 truncate">{dept.code}</p>
                     )}
                   </div>
                 </div>
                 {canManageDepartments() && (
-                  <div className="flex space-x-2">
+                  <div className="flex space-x-1 sm:space-x-2 flex-shrink-0">
                     <button
                       onClick={() => handleEdit(dept)}
-                      className="text-blue-600 hover:text-blue-800 p-2 rounded-lg hover:bg-blue-50 transition-colors"
+                      className="text-blue-600 hover:text-blue-800 p-1.5 sm:p-2 rounded-lg hover:bg-blue-50 transition-colors"
                       title="Edit Department"
                     >
-                      <FaEdit />
+                      <FaEdit className="w-3 h-3 sm:w-4 sm:h-4" />
                     </button>
                     <button
                       onClick={() => handleDelete(dept._id)}
-                      className="text-red-600 hover:text-red-800 p-2 rounded-lg hover:bg-red-50 transition-colors"
+                      className="text-red-600 hover:text-red-800 p-1.5 sm:p-2 rounded-lg hover:bg-red-50 transition-colors"
                       title="Delete Department"
                     >
-                      <FaTrash />
+                      <FaTrash className="w-3 h-3 sm:w-4 sm:h-4" />
                     </button>
                   </div>
                 )}
               </div>
 
               {dept.description && (
-                <p className="text-gray-600 text-sm mb-4">{dept.description}</p>
+                <p className="text-gray-600 text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2">{dept.description}</p>
               )}
 
-              <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-                <div className="flex items-center space-x-2 text-sm text-gray-600">
-                  <FaUsers />
-                  <span>{dept.employeeCount || 0} Employees</span>
+              <div className="flex items-center justify-between pt-3 sm:pt-4 border-t border-gray-200">
+                <div className="flex items-center space-x-1 sm:space-x-2 text-xs sm:text-sm text-gray-600">
+                  <FaUsers className="flex-shrink-0" />
+                  <span className="truncate">{dept.employeeCount || 0} Employees</span>
                 </div>
                 {dept.head && (
-                  <div className="text-sm text-gray-600">
+                  <div className="text-xs sm:text-sm text-gray-600 truncate max-w-[120px] sm:max-w-none">
                     Head: {dept.head.firstName} {dept.head.lastName}
                   </div>
                 )}

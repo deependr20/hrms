@@ -32,45 +32,45 @@ export default function OffboardingPage() {
   }
 
   return (
-    <div className="p-6">
+    <div className="page-container space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-3 sm:space-y-0">
         <div>
-          <h1 className="text-3xl font-bold text-gray-800">Offboarding</h1>
-          <p className="text-gray-600 mt-1">Manage employee exit process</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Offboarding</h1>
+          <p className="text-gray-600 mt-1 text-sm sm:text-base">Manage employee exit process</p>
         </div>
-        <button className="btn-primary flex items-center space-x-2">
-          <FaUserMinus />
+        <button className="btn-primary flex items-center justify-center space-x-2 w-full sm:w-auto">
+          <FaUserMinus className="w-4 h-4" />
           <span>New Offboarding</span>
         </button>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-white rounded-lg shadow-md p-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+        <div className="bg-white rounded-lg shadow-md p-3 sm:p-6">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-gray-600">Total Exits</h3>
-            <FaUserMinus className="text-red-500" />
+            <h3 className="text-xs sm:text-sm font-medium text-gray-600 truncate">Total Exits</h3>
+            <FaUserMinus className="text-red-500 flex-shrink-0" />
           </div>
-          <div className="text-3xl font-bold text-gray-800">{offboardings.length}</div>
+          <div className="text-2xl sm:text-3xl font-bold text-gray-800">{offboardings.length}</div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="bg-white rounded-lg shadow-md p-3 sm:p-6">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-gray-600">In Progress</h3>
-            <FaClock className="text-yellow-500" />
+            <h3 className="text-xs sm:text-sm font-medium text-gray-600 truncate">In Progress</h3>
+            <FaClock className="text-yellow-500 flex-shrink-0" />
           </div>
-          <div className="text-3xl font-bold text-gray-800">
+          <div className="text-2xl sm:text-3xl font-bold text-gray-800">
             {offboardings.filter(o => o.status === 'in-progress').length}
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="bg-white rounded-lg shadow-md p-3 sm:p-6">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-gray-600">Completed</h3>
-            <FaCheckCircle className="text-green-500" />
+            <h3 className="text-xs sm:text-sm font-medium text-gray-600 truncate">Completed</h3>
+            <FaCheckCircle className="text-green-500 flex-shrink-0" />
           </div>
-          <div className="text-3xl font-bold text-gray-800">
+          <div className="text-2xl sm:text-3xl font-bold text-gray-800">
             {offboardings.filter(o => o.status === 'completed').length}
           </div>
         </div>
@@ -78,8 +78,8 @@ export default function OffboardingPage() {
 
       {/* Offboarding List */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        <div className="p-4 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-800">Exit Records</h2>
+        <div className="p-3 sm:p-4 border-b border-gray-200">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-800">Exit Records</h2>
         </div>
 
         {loading ? (

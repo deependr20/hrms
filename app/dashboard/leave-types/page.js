@@ -149,18 +149,18 @@ export default function LeaveTypesPage() {
   }
 
   return (
-    <div className="p-6">
+    <div className="page-container space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-3 sm:space-y-0">
         <div>
-          <h1 className="text-3xl font-bold text-gray-800">Leave Types</h1>
-          <p className="text-gray-600 mt-1">Configure different types of leaves</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Leave Types</h1>
+          <p className="text-gray-600 mt-1 text-sm sm:text-base">Configure different types of leaves</p>
         </div>
         <button
           onClick={() => setShowModal(true)}
-          className="btn-primary flex items-center space-x-2"
+          className="btn-primary flex items-center justify-center space-x-2 w-full sm:w-auto"
         >
-          <FaPlus />
+          <FaPlus className="w-4 h-4" />
           <span>Add Leave Type</span>
         </button>
       </div>
