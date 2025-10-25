@@ -19,7 +19,10 @@ COPY . .
 # Copy environment files
 COPY .env* ./
 
-# Set default environment variables for build (will be overridden by .env file)
+# Create .env.local from .env for Next.js build process
+RUN if [ -f .env ]; then cp .env .env.local; fi
+
+# Set default environment variables for build (will be overridden by .env files)
 ENV NODE_ENV=production
 ENV MONGODB_URI=""
 ENV JWT_SECRET=""
