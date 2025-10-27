@@ -13,11 +13,27 @@ export default function LeaveRequestsPage() {
   const [showModal, setShowModal] = useState(false)
 
   useEffect(() => {
-    const userData = localStorage.getItem('user')
-    if (userData) {
-      const parsedUser = JSON.parse(userData)
-      setUser(parsedUser)
-      fetchLeaves(parsedUser.employeeId._id)
+    try {
+      const userData = localStorage.getItem('user')
+      if (userData) {
+        const parsedUser = JSON.parse(userData)
+        setUser(parsedUser)
+        if (parsedUser?.employeeId?._id) {
+          fetchLeaves(parsedUser.employeeId._id)
+        } else {
+          console.error('Employee ID not found in user data')
+          toast.error('Employee information not found. Please login again.')
+          setLoading(false)
+        }
+      } else {
+        console.error('No user data found')
+        toast.error('Please login to view leave requests')
+        setLoading(false)
+      }
+    } catch (error) {
+      console.error('Error parsing user data:', error)
+      toast.error('Error loading user information. Please login again.')
+      setLoading(false)
     }
   }, [])
 
@@ -29,7 +45,10 @@ export default function LeaveRequestsPage() {
       })
       const data = await response.json()
       if (data.success) {
-        setLeaves(data.data)
+        setLeaves(data.data || [])
+      } else {
+        console.error('API Error:', data.message)
+        toast.error(data.message || 'Failed to fetch leave requests')
       }
     } catch (error) {
       console.error('Fetch leaves error:', error)
@@ -173,26 +192,32 @@ export default function LeaveRequestsPage() {
                   <tr key={leave._id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">
-                        {leave.leaveType?.name || 'N/A'}
+                        {leave?.leaveType?.name || 'N/A'}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
-                        {calculateDuration(leave.startDate, leave.endDate)} day{calculateDuration(leave.startDate, leave.endDate) > 1 ? 's' : ''}
+                        {leave?.startDate && leave?.endDate ?
+                          `${calculateDuration(leave.startDate, leave.endDate)} day${calculateDuration(leave.startDate, leave.endDate) > 1 ? 's' : ''}`
+                          : 'N/A'
+                        }
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
-                        {formatDate(leave.startDate)} - {formatDate(leave.endDate)}
+                        {leave?.startDate && leave?.endDate ?
+                          `${formatDate(leave.startDate)} - ${formatDate(leave.endDate)}`
+                          : 'N/A'
+                        }
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(leave.status)}`}>
-                        {leave.status.charAt(0).toUpperCase() + leave.status.slice(1)}
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(leave?.status || 'pending')}`}>
+                        {leave?.status ? leave.status.charAt(0).toUpperCase() + leave.status.slice(1) : 'Pending'}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {formatDate(leave.appliedDate)}
+                      {leave?.appliedDate ? formatDate(leave.appliedDate) : 'N/A'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <button

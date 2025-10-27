@@ -17,7 +17,7 @@ const rolePermissions = {
     '/dashboard/departments',
     '/dashboard/designations',
     '/dashboard/attendance/report',
-    '/dashboard/attendance/shifts',
+
     '/dashboard/leave/requests',
     '/dashboard/leave/approvals',
     '/dashboard/leave-types',
