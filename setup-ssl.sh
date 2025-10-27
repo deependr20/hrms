@@ -29,11 +29,19 @@ print_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
-# Get server IP
+# Get server IP and domain
 SERVER_IP=$(curl -s ifconfig.me || curl -s ipinfo.io/ip || echo "199.59.27.50")
 
+# Allow user to specify domain or use IP
+if [ -n "$1" ]; then
+    DOMAIN="$1"
+    print_status "🌐 Using domain: $DOMAIN"
+else
+    DOMAIN="$SERVER_IP"
+    print_status "📍 Using IP address: $SERVER_IP"
+fi
+
 print_status "🚀 Starting HRMS SSL Setup"
-print_status "📍 Server IP: $SERVER_IP"
 
 # Check if running as root
 if [ "$EUID" -ne 0 ]; then
@@ -51,17 +59,17 @@ print_status "🔧 Updating environment configuration for HTTPS..."
 if [ -f .env ]; then
     # Backup current .env
     cp .env .env.backup.$(date +%Y%m%d_%H%M%S)
-    
+
     # Update NEXTAUTH_URL to use HTTPS
-    sed -i "s|NEXTAUTH_URL=.*|NEXTAUTH_URL=https://$SERVER_IP|g" .env
-    
+    sed -i "s|NEXTAUTH_URL=.*|NEXTAUTH_URL=https://$DOMAIN|g" .env
+
     # Update NEXT_PUBLIC_APP_URL to use HTTPS
     if grep -q "NEXT_PUBLIC_APP_URL" .env; then
-        sed -i "s|NEXT_PUBLIC_APP_URL=.*|NEXT_PUBLIC_APP_URL=https://$SERVER_IP|g" .env
+        sed -i "s|NEXT_PUBLIC_APP_URL=.*|NEXT_PUBLIC_APP_URL=https://$DOMAIN|g" .env
     else
-        echo "NEXT_PUBLIC_APP_URL=https://$SERVER_IP" >> .env
+        echo "NEXT_PUBLIC_APP_URL=https://$DOMAIN" >> .env
     fi
-    
+
     print_success "Environment updated for HTTPS"
 else
     print_error ".env file not found!"
@@ -124,7 +132,7 @@ services:
         - JWT_SECRET=\${JWT_SECRET}
         - NEXTAUTH_SECRET=\${NEXTAUTH_SECRET}
         - NEXTAUTH_URL=\${NEXTAUTH_URL}
-        - NEXT_PUBLIC_APP_URL=\${NEXT_PUBLIC_APP_URL:-http://$SERVER_IP}
+        - NEXT_PUBLIC_APP_URL=\${NEXT_PUBLIC_APP_URL:-http://$DOMAIN}
         - NEXT_PUBLIC_APP_NAME=\${NEXT_PUBLIC_APP_NAME:-HRMS System}
     ports:
       - "3000:3000"
@@ -171,11 +179,11 @@ docker run --rm \
     certbot/certbot certonly \
     --webroot \
     --webroot-path=/var/www/certbot \
-    --email admin@$SERVER_IP \
+    --email admin@$DOMAIN \
     --agree-tos \
     --no-eff-email \
     --force-renewal \
-    -d $SERVER_IP
+    -d $DOMAIN
 
 if [ $? -eq 0 ]; then
     print_success "SSL certificate generated successfully!"
@@ -190,7 +198,7 @@ else
     docker-compose down
     docker-compose up -d
     
-    print_success "HRMS is running on HTTP: http://$SERVER_IP"
+    print_success "HRMS is running on HTTP: http://$DOMAIN"
     exit 0
 fi
 
@@ -200,6 +208,10 @@ docker-compose -f docker-compose.temp.yml down
 
 # Clean up temporary files
 rm -f nginx.temp.conf docker-compose.temp.yml
+
+# Update nginx SSL config with correct domain
+print_status "🔧 Updating nginx SSL configuration..."
+sed -i "s|DOMAIN_PLACEHOLDER|$DOMAIN|g" nginx.ssl.conf
 
 # Step 7: Start with SSL configuration
 print_status "🚀 Starting HRMS with SSL..."
@@ -212,7 +224,7 @@ sleep 30
 print_status "🔍 Verifying SSL setup..."
 
 # Test HTTP redirect
-HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://$SERVER_IP || echo "000")
+HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://$DOMAIN || echo "000")
 if [ "$HTTP_STATUS" = "301" ] || [ "$HTTP_STATUS" = "302" ]; then
     print_success "HTTP to HTTPS redirect working"
 else
@@ -220,7 +232,7 @@ else
 fi
 
 # Test HTTPS
-HTTPS_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -k https://$SERVER_IP || echo "000")
+HTTPS_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -k https://$DOMAIN || echo "000")
 if [ "$HTTPS_STATUS" = "200" ]; then
     print_success "HTTPS is working"
 else
@@ -231,9 +243,9 @@ fi
 print_success "🎉 HRMS SSL Setup Complete!"
 echo ""
 echo "📋 Access Information:"
-echo "🌐 HTTPS URL: https://$SERVER_IP"
-echo "🔒 HTTP URL: http://$SERVER_IP (redirects to HTTPS)"
-echo "🔧 Direct App: http://$SERVER_IP:3000"
+echo "🌐 HTTPS URL: https://$DOMAIN"
+echo "🔒 HTTP URL: http://$DOMAIN (redirects to HTTPS)"
+echo "🔧 Direct App: http://$DOMAIN:3000"
 echo ""
 echo "📊 Container Status:"
 docker-compose -f docker-compose.ssl.yml ps
