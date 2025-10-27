@@ -170,7 +170,7 @@ export default function GoalDetailsPage() {
       <div className="p-6">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-800 mb-4">Goal Not Found</h1>
-          <p className="text-gray-600 mb-4">The goal you're looking for doesn't exist.</p>
+          <p className="text-gray-600 mb-4">The goal you&apos;re looking for doesn&apos;t exist.</p>
           <button
             onClick={() => router.push('/dashboard/performance/goals')}
             className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"

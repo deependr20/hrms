@@ -166,7 +166,7 @@ export default function CreateRatingPage() {
           </button>
           <div>
             <h1 className="text-3xl font-bold text-gray-800">Create Employee Rating</h1>
-            <p className="text-gray-600 mt-1">Rate an employee's performance</p>
+            <p className="text-gray-600 mt-1">Rate an employee&apos;s performance</p>
           </div>
         </div>
       </div>

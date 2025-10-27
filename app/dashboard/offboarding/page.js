@@ -1,12 +1,14 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 import { FaUserMinus, FaCheckCircle, FaClock } from 'react-icons/fa'
 
 export default function OffboardingPage() {
   const [offboardings, setOffboardings] = useState([])
   const [loading, setLoading] = useState(true)
+  const router = useRouter()
 
   useEffect(() => {
     fetchOffboardings()
@@ -40,7 +42,7 @@ export default function OffboardingPage() {
           <p className="text-gray-600 mt-1 text-sm sm:text-base">Manage employee exit process</p>
         </div>
         <button
-          onClick={() => window.location.href = '/dashboard/offboarding/create'}
+          onClick={() => router.push('/dashboard/offboarding/create')}
           className="btn-primary flex items-center justify-center space-x-2 w-full sm:w-auto"
         >
           <FaUserMinus className="w-4 h-4" />

@@ -1,12 +1,14 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 import { FaUserPlus, FaCheckCircle, FaClock, FaListAlt } from 'react-icons/fa'
 
 export default function OnboardingPage() {
   const [onboardings, setOnboardings] = useState([])
   const [loading, setLoading] = useState(true)
+  const router = useRouter()
 
   useEffect(() => {
     fetchOnboardings()
@@ -40,7 +42,7 @@ export default function OnboardingPage() {
           <p className="text-gray-600 mt-1 text-sm sm:text-base">Manage employee onboarding process</p>
         </div>
         <button
-          onClick={() => window.location.href = '/dashboard/onboarding/create'}
+          onClick={() => router.push('/dashboard/onboarding/create')}
           className="btn-primary flex items-center justify-center space-x-2 w-full sm:w-auto"
         >
           <FaUserPlus className="w-4 h-4" />
