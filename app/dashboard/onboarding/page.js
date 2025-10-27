@@ -39,7 +39,10 @@ export default function OnboardingPage() {
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Onboarding</h1>
           <p className="text-gray-600 mt-1 text-sm sm:text-base">Manage employee onboarding process</p>
         </div>
-        <button className="btn-primary flex items-center justify-center space-x-2 w-full sm:w-auto">
+        <button
+          onClick={() => window.location.href = '/dashboard/onboarding/create'}
+          className="btn-primary flex items-center justify-center space-x-2 w-full sm:w-auto"
+        >
           <FaUserPlus className="w-4 h-4" />
           <span>New Onboarding</span>
         </button>

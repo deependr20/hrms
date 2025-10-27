@@ -150,7 +150,7 @@ export default function AdminDashboard({ user }) {
     <div className="page-container space-y-6">
       {/* Welcome Section */}
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-6 text-white">
-        <h1 className="text-3xl font-bold mb-2">Admin Dashboard 👑</h1>
+        <h1 className="text-3xl font-bold mb-2">Admin Dashboard </h1>
         <p className="text-blue-100">Complete system overview and management controls</p>
         <div className="mt-4 flex space-x-4">
           <button

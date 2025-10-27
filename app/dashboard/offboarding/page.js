@@ -39,7 +39,10 @@ export default function OffboardingPage() {
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Offboarding</h1>
           <p className="text-gray-600 mt-1 text-sm sm:text-base">Manage employee exit process</p>
         </div>
-        <button className="btn-primary flex items-center justify-center space-x-2 w-full sm:w-auto">
+        <button
+          onClick={() => window.location.href = '/dashboard/offboarding/create'}
+          className="btn-primary flex items-center justify-center space-x-2 w-full sm:w-auto"
+        >
           <FaUserMinus className="w-4 h-4" />
           <span>New Offboarding</span>
         </button>

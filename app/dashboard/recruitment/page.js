@@ -39,7 +39,10 @@ export default function RecruitmentPage() {
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Recruitment</h1>
           <p className="text-gray-600 mt-1 text-sm sm:text-base">Manage job postings and candidates</p>
         </div>
-        <button className="btn-primary flex items-center justify-center space-x-2 w-full sm:w-auto">
+        <button
+          onClick={() => window.location.href = '/dashboard/recruitment/create'}
+          className="btn-primary flex items-center justify-center space-x-2 w-full sm:w-auto"
+        >
           <FaPlus className="w-4 h-4" />
           <span>Post Job</span>
         </button>
