@@ -10,11 +10,27 @@ export default function TravelPage() {
   const [user, setUser] = useState(null)
 
   useEffect(() => {
-    const userData = localStorage.getItem('user')
-    if (userData) {
-      const parsedUser = JSON.parse(userData)
-      setUser(parsedUser)
-      fetchTravels(parsedUser.employeeId._id)
+    try {
+      const userData = localStorage.getItem('user')
+      if (userData) {
+        const parsedUser = JSON.parse(userData)
+        setUser(parsedUser)
+        if (parsedUser?.employeeId?._id) {
+          fetchTravels(parsedUser.employeeId._id)
+        } else {
+          console.error('Employee ID not found in user data')
+          toast.error('Employee information not found. Please login again.')
+          setLoading(false)
+        }
+      } else {
+        console.error('No user data found')
+        toast.error('Please login to view travel requests')
+        setLoading(false)
+      }
+    } catch (error) {
+      console.error('Error parsing user data:', error)
+      toast.error('Error loading user information. Please login again.')
+      setLoading(false)
     }
   }, [])
 
@@ -27,7 +43,10 @@ export default function TravelPage() {
 
       const data = await response.json()
       if (data.success) {
-        setTravels(data.data)
+        setTravels(data.data || [])
+      } else {
+        console.error('API Error:', data.message)
+        toast.error(data.message || 'Failed to fetch travel requests')
       }
     } catch (error) {
       console.error('Fetch travel error:', error)
@@ -127,26 +146,26 @@ export default function TravelPage() {
                     <tr key={travel._id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">
-                          {travel.destination}
+                          {travel?.destination || 'N/A'}
                         </div>
-                        <div className="text-sm text-gray-500">{travel.travelMode}</div>
+                        <div className="text-sm text-gray-500">{travel?.travelMode || 'N/A'}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {new Date(travel.startDate).toLocaleDateString()}
+                        {travel?.startDate ? new Date(travel.startDate).toLocaleDateString() : 'N/A'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {new Date(travel.endDate).toLocaleDateString()}
+                        {travel?.endDate ? new Date(travel.endDate).toLocaleDateString() : 'N/A'}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
-                        {travel.purpose}
+                        {travel?.purpose || 'N/A'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          travel.status === 'approved' ? 'bg-green-100 text-green-800' :
-                          travel.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                          travel?.status === 'approved' ? 'bg-green-100 text-green-800' :
+                          travel?.status === 'rejected' ? 'bg-red-100 text-red-800' :
                           'bg-yellow-100 text-yellow-800'
                         }`}>
-                          {travel.status}
+                          {travel?.status || 'pending'}
                         </span>
                       </td>
                     </tr>

@@ -11,11 +11,27 @@ export default function HelpdeskPage() {
   const [showModal, setShowModal] = useState(false)
 
   useEffect(() => {
-    const userData = localStorage.getItem('user')
-    if (userData) {
-      const parsedUser = JSON.parse(userData)
-      setUser(parsedUser)
-      fetchTickets(parsedUser.employeeId._id)
+    try {
+      const userData = localStorage.getItem('user')
+      if (userData) {
+        const parsedUser = JSON.parse(userData)
+        setUser(parsedUser)
+        if (parsedUser?.employeeId?._id) {
+          fetchTickets(parsedUser.employeeId._id)
+        } else {
+          console.error('Employee ID not found in user data')
+          toast.error('Employee information not found. Please login again.')
+          setLoading(false)
+        }
+      } else {
+        console.error('No user data found')
+        toast.error('Please login to view tickets')
+        setLoading(false)
+      }
+    } catch (error) {
+      console.error('Error parsing user data:', error)
+      toast.error('Error loading user information. Please login again.')
+      setLoading(false)
     }
   }, [])
 
@@ -28,7 +44,10 @@ export default function HelpdeskPage() {
 
       const data = await response.json()
       if (data.success) {
-        setTickets(data.data)
+        setTickets(data.data || [])
+      } else {
+        console.error('API Error:', data.message)
+        toast.error(data.message || 'Failed to fetch tickets')
       }
     } catch (error) {
       console.error('Fetch tickets error:', error)
@@ -143,34 +162,34 @@ export default function HelpdeskPage() {
                   tickets.map((ticket) => (
                     <tr key={ticket._id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-primary-600">
-                        {ticket.ticketNumber}
+                        {ticket?.ticketNumber || 'N/A'}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-900">
-                        {ticket.subject}
+                        {ticket?.subject || 'N/A'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {ticket.category}
+                        {ticket?.category || 'N/A'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          ticket.priority === 'high' ? 'bg-red-100 text-red-800' :
-                          ticket.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                          ticket?.priority === 'high' ? 'bg-red-100 text-red-800' :
+                          ticket?.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
                           'bg-green-100 text-green-800'
                         }`}>
-                          {ticket.priority}
+                          {ticket?.priority || 'low'}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          ticket.status === 'resolved' ? 'bg-green-100 text-green-800' :
-                          ticket.status === 'in-progress' ? 'bg-blue-100 text-blue-800' :
+                          ticket?.status === 'resolved' ? 'bg-green-100 text-green-800' :
+                          ticket?.status === 'in-progress' ? 'bg-blue-100 text-blue-800' :
                           'bg-yellow-100 text-yellow-800'
                         }`}>
-                          {ticket.status}
+                          {ticket?.status || 'open'}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(ticket.createdAt).toLocaleDateString()}
+                        {ticket?.createdAt ? new Date(ticket.createdAt).toLocaleDateString() : 'N/A'}
                       </td>
                     </tr>
                   ))

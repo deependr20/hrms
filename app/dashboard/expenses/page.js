@@ -11,11 +11,27 @@ export default function ExpensesPage() {
   const [showModal, setShowModal] = useState(false)
 
   useEffect(() => {
-    const userData = localStorage.getItem('user')
-    if (userData) {
-      const parsedUser = JSON.parse(userData)
-      setUser(parsedUser)
-      fetchExpenses(parsedUser.employeeId._id)
+    try {
+      const userData = localStorage.getItem('user')
+      if (userData) {
+        const parsedUser = JSON.parse(userData)
+        setUser(parsedUser)
+        if (parsedUser?.employeeId?._id) {
+          fetchExpenses(parsedUser.employeeId._id)
+        } else {
+          console.error('Employee ID not found in user data')
+          toast.error('Employee information not found. Please login again.')
+          setLoading(false)
+        }
+      } else {
+        console.error('No user data found')
+        toast.error('Please login to view expenses')
+        setLoading(false)
+      }
+    } catch (error) {
+      console.error('Error parsing user data:', error)
+      toast.error('Error loading user information. Please login again.')
+      setLoading(false)
     }
   }, [])
 
@@ -28,7 +44,10 @@ export default function ExpensesPage() {
 
       const data = await response.json()
       if (data.success) {
-        setExpenses(data.data)
+        setExpenses(data.data || [])
+      } else {
+        console.error('API Error:', data.message)
+        toast.error(data.message || 'Failed to fetch expenses')
       }
     } catch (error) {
       console.error('Fetch expenses error:', error)
@@ -157,24 +176,24 @@ export default function ExpensesPage() {
                   expenses.map((expense) => (
                     <tr key={expense._id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {new Date(expense.expenseDate).toLocaleDateString()}
+                        {expense?.expenseDate ? new Date(expense.expenseDate).toLocaleDateString() : 'N/A'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {expense.category}
+                        {expense?.category || 'N/A'}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
-                        {expense.description}
+                        {expense?.description || 'N/A'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                        {formatCurrency(expense.amount)}
+                        {formatCurrency(expense?.amount)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          expense.status === 'approved' ? 'bg-green-100 text-green-800' :
-                          expense.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                          expense?.status === 'approved' ? 'bg-green-100 text-green-800' :
+                          expense?.status === 'rejected' ? 'bg-red-100 text-red-800' :
                           'bg-yellow-100 text-yellow-800'
                         }`}>
-                          {expense.status}
+                          {expense?.status || 'pending'}
                         </span>
                       </td>
                     </tr>
