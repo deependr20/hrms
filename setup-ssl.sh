@@ -30,7 +30,7 @@ print_error() {
 }
 
 # Get server IP and domain
-SERVER_IP=$(curl -s ifconfig.me || curl -s ipinfo.io/ip || echo "199.59.27.50")
+SERVER_IP=$(curl -s ifconfig.me || curl -s ipinfo.io/ip || echo "209.38.126.55")
 
 # Allow user to specify domain or use IP
 if [ -n "$1" ]; then

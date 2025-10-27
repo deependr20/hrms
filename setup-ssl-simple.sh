@@ -29,7 +29,7 @@ print_error() {
 }
 
 # Get server IP
-SERVER_IP=$(curl -s ifconfig.me || curl -s ipinfo.io/ip || echo "199.59.27.50")
+SERVER_IP=$(curl -s ifconfig.me || curl -s ipinfo.io/ip || echo "209.38.126.55")
 
 # Allow user to specify domain or use IP
 if [ -n "$1" ]; then
@@ -102,7 +102,7 @@ else
     openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
         -keyout ssl/privkey.pem \
         -out ssl/fullchain.pem \
-        -subj "/C=US/ST=State/L=City/O=Organization/CN=$DOMAIN"
+        -subj "/C=US/ST=State/L=City/O=HRMS/CN=$DOMAIN"
     
     print_success "Self-signed certificate created!"
     
@@ -114,7 +114,7 @@ events {
 
 http {
     upstream hrms_app {
-        server hrms-app:3000;
+        server hrms-hrms-app-1:3000;
     }
 
     # Rate limiting
