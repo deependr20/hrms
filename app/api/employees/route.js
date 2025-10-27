@@ -108,11 +108,10 @@ export async function POST(request) {
 
     // Create user account for the employee
     const password = data.password || 'employee123' // Default password if not provided
-    const hashedPassword = await bcrypt.hash(password, 10)
 
     const user = await User.create({
       email: data.email,
-      password: hashedPassword,
+      password: password, // Let the pre-save hook handle hashing
       role: data.role || 'employee', // Default role is employee
       employeeId: employee._id,
     })

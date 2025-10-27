@@ -40,12 +40,26 @@ export async function POST(request) {
       )
     }
 
-    // Check password - TEMPORARILY USING PLAIN TEXT COMPARISON FOR TESTING
-    const isPasswordMatch = user.password === password
+    // Check password using bcrypt comparison
+    let isPasswordMatch = false
+
+    try {
+      isPasswordMatch = await user.comparePassword(password)
+    } catch (error) {
+      console.log('Bcrypt comparison failed, trying plain text for legacy users:', error.message)
+      // Fallback for legacy users with plain text passwords
+      isPasswordMatch = user.password === password
+
+      // If plain text match, update to hashed password
+      if (isPasswordMatch) {
+        console.log('Legacy user detected, updating password hash')
+        user.password = password // This will trigger the pre-save hook to hash it
+        await user.save()
+      }
+    }
 
     console.log('Password match:', isPasswordMatch)
-    console.log('Stored password:', user.password)
-    console.log('Entered password:', password)
+    console.log('User email:', user.email)
 
     if (!isPasswordMatch) {
       return NextResponse.json(
