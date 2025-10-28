@@ -76,7 +76,6 @@ export default function Sidebar({ isOpen, setIsOpen }) {
             />
           </div>
 
-       
         </div>
 
         <nav className="px-3 sm:px-4 py-4 space-y-2">
