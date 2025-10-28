@@ -7,7 +7,7 @@ export async function middleware(request) {
 
   // Public routes that don't require authentication
   const publicRoutes = ['/login', '/register', '/forgot-password']
-  const publicApiRoutes = ['/api/auth/login', '/api/auth/register', '/api/auth/forgot-password']
+  const publicApiRoutes = ['/api/auth/login', '/api/auth/register', '/api/auth/forgot-password', '/api/create-user', '/api/clear-users', '/api/debug/users']
 
   const isPublicRoute = publicRoutes.some(route => request.nextUrl.pathname.startsWith(route))
   const isPublicApiRoute = publicApiRoutes.some(route => request.nextUrl.pathname.startsWith(route))

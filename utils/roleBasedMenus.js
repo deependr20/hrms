@@ -2,7 +2,8 @@ import {
   FaTachometerAlt, FaUsers, FaClock, FaCalendarAlt, FaMoneyBillWave,
   FaChartLine, FaBriefcase, FaUserPlus, FaSignOutAlt, FaFileAlt,
   FaBox, FaReceipt, FaPlane, FaHeadset, FaBook, FaGraduationCap,
-  FaBullhorn, FaCog, FaUser, FaTrophy, FaBullseye, FaStar, FaAward
+  FaBullhorn, FaCog, FaUser, FaTrophy, FaBullseye, FaStar, FaAward,
+  FaTasks, FaProjectDiagram, FaClipboardList
 } from 'react-icons/fa'
 
 // Define menu items for each role
@@ -61,6 +62,20 @@ export const roleBasedMenus = {
         { name: 'Goals & Objectives', path: '/dashboard/performance/goals' },
         { name: 'Performance Reports', path: '/dashboard/performance/reports' },
         { name: 'Employee Ratings', path: '/dashboard/performance/ratings' },
+      ]
+    },
+    {
+      name: 'Task Management',
+      icon: FaTasks,
+      path: '/dashboard/tasks',
+      submenu: [
+        { name: 'Task Dashboard', path: '/dashboard/tasks' },
+        { name: 'All Tasks', path: '/dashboard/tasks/all' },
+        { name: 'Create Task', path: '/dashboard/tasks/create' },
+        { name: 'My Tasks', path: '/dashboard/tasks/my-tasks' },
+        { name: 'Team Tasks', path: '/dashboard/tasks/team-tasks' },
+        { name: 'Projects', path: '/dashboard/tasks/projects' },
+        { name: 'Task Analytics', path: '/dashboard/tasks/analytics' },
       ]
     },
     { 
@@ -167,6 +182,19 @@ export const roleBasedMenus = {
         { name: 'Performance Reports', path: '/dashboard/performance/reports' },
       ]
     },
+    {
+      name: 'Task Management',
+      icon: FaTasks,
+      path: '/dashboard/tasks',
+      submenu: [
+        { name: 'Task Dashboard', path: '/dashboard/tasks' },
+        { name: 'All Tasks', path: '/dashboard/tasks/all' },
+        { name: 'Create Task', path: '/dashboard/tasks/create' },
+        { name: 'My Tasks', path: '/dashboard/tasks/my-tasks' },
+        { name: 'Department Tasks', path: '/dashboard/tasks/department-tasks' },
+        { name: 'Projects', path: '/dashboard/tasks/projects' },
+      ]
+    },
     { 
       name: 'Recruitment', 
       icon: FaBriefcase, 
@@ -227,6 +255,18 @@ export const roleBasedMenus = {
         { name: 'Performance Reports', path: '/dashboard/performance/reports' },
       ]
     },
+    {
+      name: 'Task Management',
+      icon: FaTasks,
+      path: '/dashboard/tasks',
+      submenu: [
+        { name: 'Task Dashboard', path: '/dashboard/tasks' },
+        { name: 'Create Task', path: '/dashboard/tasks/create' },
+        { name: 'My Tasks', path: '/dashboard/tasks/my-tasks' },
+        { name: 'Team Tasks', path: '/dashboard/tasks/team-tasks' },
+        { name: 'Assign Tasks', path: '/dashboard/tasks/assign' },
+      ]
+    },
     { name: 'My Profile', icon: FaUser, path: '/dashboard/profile' },
     { name: 'Documents', icon: FaFileAlt, path: '/dashboard/documents' },
     { name: 'Expenses', icon: FaReceipt, path: '/dashboard/expenses' },
@@ -266,12 +306,23 @@ export const roleBasedMenus = {
         { name: 'Leave Balance', path: '/dashboard/leave/balance' },
       ]
     },
-    { 
-      name: 'Payroll', 
-      icon: FaMoneyBillWave, 
+    {
+      name: 'Payroll',
+      icon: FaMoneyBillWave,
       path: '/dashboard/payroll',
       submenu: [
         { name: 'My Payslips', path: '/dashboard/payroll/payslips' },
+      ]
+    },
+    {
+      name: 'Task Management',
+      icon: FaTasks,
+      path: '/dashboard/tasks',
+      submenu: [
+        { name: 'My Tasks', path: '/dashboard/tasks/my-tasks' },
+        { name: 'Create Task', path: '/dashboard/tasks/create' },
+        { name: 'Assign to Colleague', path: '/dashboard/tasks/assign' },
+        { name: 'Task Dashboard', path: '/dashboard/tasks' },
       ]
     },
     { name: 'Documents', icon: FaFileAlt, path: '/dashboard/documents' },

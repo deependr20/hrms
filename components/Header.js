@@ -11,8 +11,10 @@ export default function Header({ toggleSidebar }) {
   const [user, setUser] = useState(null)
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
     const userData = localStorage.getItem('user')
     if (userData) {
       setUser(JSON.parse(userData))
@@ -26,6 +28,27 @@ export default function Header({ toggleSidebar }) {
     document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
     toast.success('Logged out successfully')
     router.push('/login')
+  }
+
+  // Don't render user-specific content until mounted to avoid hydration mismatch
+  if (!mounted) {
+    return (
+      <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-10">
+        <div className="flex items-center justify-between px-2 sm:px-4 lg:px-6 py-3 sm:py-4">
+          <div className="flex items-center space-x-2 sm:space-x-4">
+            <button
+              onClick={toggleSidebar}
+              className="lg:hidden text-gray-600 hover:text-gray-900 focus:outline-none p-1"
+            >
+              <FaBars className="w-5 h-5 sm:w-6 sm:h-6" />
+            </button>
+          </div>
+          <div className="flex items-center space-x-2 sm:space-x-4">
+            <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse"></div>
+          </div>
+        </div>
+      </header>
+    )
   }
 
   return (

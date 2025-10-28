@@ -120,12 +120,12 @@ export default function RoleBasedAccess({ children, requiredRoles = [], pathname
     if (userData) {
       const parsedUser = JSON.parse(userData)
       setUser(parsedUser)
-      
+
       // Check if user has access to current route
       const currentPath = pathname || window.location.pathname
       const permission = hasAccess(parsedUser.role, currentPath)
       setHasPermission(permission)
-      
+
       // If specific roles are required, check against them
       if (requiredRoles.length > 0) {
         const rolePermission = requiredRoles.includes(parsedUser.role)
@@ -136,9 +136,9 @@ export default function RoleBasedAccess({ children, requiredRoles = [], pathname
       router.push('/login')
       return
     }
-    
+
     setLoading(false)
-  }, [pathname, requiredRoles, router])
+  }, [pathname])
 
   if (loading) {
     return (
