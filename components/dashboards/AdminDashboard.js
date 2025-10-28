@@ -81,23 +81,29 @@ export default function AdminDashboard({ user }) {
   }
 
   const getStatsData = () => {
-    const totalEmployees = dashboardData.employees.length
-    const activeEmployees = dashboardData.employees.filter(emp => emp.status === 'active').length
-    const onLeaveToday = dashboardData.leaveRequests.filter(req => {
+    // Safety checks to ensure arrays exist
+    const employees = Array.isArray(dashboardData.employees) ? dashboardData.employees : []
+    const leaveRequests = Array.isArray(dashboardData.leaveRequests) ? dashboardData.leaveRequests : []
+    const pendingApprovals = Array.isArray(dashboardData.pendingApprovals) ? dashboardData.pendingApprovals : []
+    const departments = Array.isArray(dashboardData.departments) ? dashboardData.departments : []
+
+    const totalEmployees = employees.length
+    const activeEmployees = employees.filter(emp => emp.status === 'active').length
+    const onLeaveToday = leaveRequests.filter(req => {
       if (req.status !== 'approved') return false
       const today = new Date()
       const startDate = new Date(req.startDate)
       const endDate = new Date(req.endDate)
       return today >= startDate && today <= endDate
     }).length
-    const pendingApprovals = dashboardData.pendingApprovals.length
-    const totalDepartments = dashboardData.departments.length
+    const pendingApprovalsCount = pendingApprovals.length
+    const totalDepartments = departments.length
 
     return [
       { title: 'Total Employees', value: totalEmployees, icon: FaUsers, color: 'bg-blue-500', href: '/dashboard/employees' },
       { title: 'Active Employees', value: activeEmployees, icon: FaClock, color: 'bg-green-500', href: '/dashboard/employees' },
       { title: 'On Leave Today', value: onLeaveToday, icon: FaCalendarAlt, color: 'bg-yellow-500', href: '/dashboard/leave/requests' },
-      { title: 'Pending Approvals', value: pendingApprovals, icon: FaChartLine, color: 'bg-purple-500', href: '/dashboard/leave/approvals' },
+      { title: 'Pending Approvals', value: pendingApprovalsCount, icon: FaChartLine, color: 'bg-purple-500', href: '/dashboard/leave/approvals' },
       { title: 'Departments', value: totalDepartments, icon: FaBuilding, color: 'bg-teal-500', href: '/dashboard/departments' },
       { title: 'System Health', value: 'Good', icon: FaExclamationTriangle, color: 'bg-green-500', href: '/dashboard/settings' },
     ]
@@ -165,7 +171,7 @@ export default function AdminDashboard({ user }) {
             className="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg transition-colors flex items-center space-x-2"
           >
             <FaCheck className="w-4 h-4" />
-            <span>Approve Leaves ({dashboardData.pendingApprovals.length})</span>
+            <span>Approve Leaves ({Array.isArray(dashboardData.pendingApprovals) ? dashboardData.pendingApprovals.length : 0})</span>
           </button>
         </div>
       </div>
@@ -196,7 +202,7 @@ export default function AdminDashboard({ user }) {
         {/* Department Distribution */}
         <div className="bg-white rounded-lg shadow-md p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Department Distribution</h3>
-          {dashboardData.departmentStats.length > 0 ? (
+          {(Array.isArray(dashboardData.departmentStats) && dashboardData.departmentStats.length > 0) ? (
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
@@ -235,7 +241,7 @@ export default function AdminDashboard({ user }) {
             </button>
           </div>
           <div className="space-y-4 max-h-64 overflow-y-auto">
-            {dashboardData.leaveRequests.slice(0, 5).map((request) => (
+            {(Array.isArray(dashboardData.leaveRequests) ? dashboardData.leaveRequests : []).slice(0, 5).map((request) => (
               <div key={request._id} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-primary-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
@@ -279,7 +285,7 @@ export default function AdminDashboard({ user }) {
                 </div>
               </div>
             ))}
-            {dashboardData.leaveRequests.length === 0 && (
+            {(!Array.isArray(dashboardData.leaveRequests) || dashboardData.leaveRequests.length === 0) && (
               <div className="text-center text-gray-500 py-8">
                 No leave requests found
               </div>
@@ -323,7 +329,7 @@ export default function AdminDashboard({ user }) {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {dashboardData.employees
+              {(Array.isArray(dashboardData.employees) ? dashboardData.employees : [])
                 .filter(emp =>
                   employeeSearch === '' ||
                   `${emp.firstName} ${emp.lastName}`.toLowerCase().includes(employeeSearch.toLowerCase()) ||

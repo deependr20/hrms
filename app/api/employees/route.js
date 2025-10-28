@@ -52,9 +52,7 @@ export async function GET(request) {
 
     return NextResponse.json({
       success: true,
-      data: {
-        employees,
-      },
+      data: employees,
       pagination: {
         page,
         limit,

@@ -6,7 +6,7 @@ import {
   FaClock, FaCalendarAlt, FaMoneyBillWave, FaFileAlt,
   FaArrowUp, FaArrowDown, FaGraduationCap, FaAward,
   FaCheckCircle, FaExclamationCircle, FaUser, FaBullhorn,
-  FaExclamationTriangle, FaGift
+  FaExclamationTriangle, FaGift, FaSignInAlt, FaSignOutAlt
 } from 'react-icons/fa'
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 
@@ -15,9 +15,14 @@ export default function EmployeeDashboard({ user }) {
   const [holidays, setHolidays] = useState([])
   const [dashboardStats, setDashboardStats] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [todayAttendance, setTodayAttendance] = useState(null)
+  const [attendanceLoading, setAttendanceLoading] = useState(false)
 
   useEffect(() => {
     fetchDashboardData()
+    if (user?.employeeId?._id) {
+      fetchTodayAttendance()
+    }
   }, [])
 
   const fetchDashboardData = async () => {
@@ -54,6 +59,92 @@ export default function EmployeeDashboard({ user }) {
       toast.error('Failed to load dashboard data')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchTodayAttendance = async () => {
+    try {
+      const token = localStorage.getItem('token')
+      const today = new Date().toISOString().split('T')[0]
+
+      const response = await fetch(`/api/attendance?employeeId=${user.employeeId._id}&date=${today}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+
+      const data = await response.json()
+      if (data.success && data.data.length > 0) {
+        setTodayAttendance(data.data[0])
+      }
+    } catch (error) {
+      console.error('Fetch today attendance error:', error)
+    }
+  }
+
+  const handleClockIn = async () => {
+    if (!user?.employeeId?._id) return
+    setAttendanceLoading(true)
+
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch('/api/attendance', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          employeeId: user.employeeId._id,
+          type: 'clock-in',
+        }),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        toast.success('Clocked in successfully! 🎉')
+        setTodayAttendance(data.data)
+      } else {
+        toast.error(data.message || 'Failed to clock in')
+      }
+    } catch (error) {
+      console.error('Clock in error:', error)
+      toast.error('An error occurred while clocking in')
+    } finally {
+      setAttendanceLoading(false)
+    }
+  }
+
+  const handleClockOut = async () => {
+    if (!user?.employeeId?._id) return
+    setAttendanceLoading(true)
+
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch('/api/attendance', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          employeeId: user.employeeId._id,
+          type: 'clock-out',
+        }),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        toast.success('Clocked out successfully! 👋')
+        setTodayAttendance(data.data)
+      } else {
+        toast.error(data.message || 'Failed to clock out')
+      }
+    } catch (error) {
+      console.error('Clock out error:', error)
+      toast.error('An error occurred while clocking out')
+    } finally {
+      setAttendanceLoading(false)
     }
   }
 
@@ -146,6 +237,154 @@ export default function EmployeeDashboard({ user }) {
             <p>Welcome back, {dashboardStats.employee.name}!</p>
           </div>
         )}
+      </div>
+
+      {/* Check-In/Check-Out Section */}
+      <div className="bg-gradient-to-br from-teal-500 via-cyan-500 to-blue-500 rounded-2xl shadow-xl p-4 sm:p-6 text-white">
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-4 sm:gap-6">
+          {/* Left Side - Info */}
+          <div className="flex-1 w-full">
+            <div className="flex items-center space-x-3 mb-3 sm:mb-4">
+              <div className="bg-white bg-opacity-20 p-2 sm:p-3 rounded-full">
+                <FaClock className="w-5 h-5 sm:w-6 sm:h-6" />
+              </div>
+              <div>
+                <h2 className="text-lg sm:text-xl font-bold">Quick Attendance</h2>
+                <p className="text-teal-100 text-xs sm:text-sm">Mark your attendance for today</p>
+              </div>
+            </div>
+
+            {/* Attendance Status */}
+            <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-3 sm:p-4 space-y-2 sm:space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
+                {/* Check In Time */}
+                <div className="bg-white bg-opacity-10 rounded-lg p-2 sm:p-3">
+                  <div className="flex items-center space-x-2 mb-1 sm:mb-2">
+                    <FaSignInAlt className="w-3 h-3 sm:w-4 sm:h-4 text-green-300" />
+                    <p className="text-xs font-medium text-teal-100">Check In</p>
+                  </div>
+                  <p className="text-base sm:text-xl font-bold">
+                    {todayAttendance?.checkIn
+                      ? new Date(todayAttendance.checkIn).toLocaleTimeString('en-IN', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          hour12: true
+                        })
+                      : '--:--'}
+                  </p>
+                  {todayAttendance?.checkInStatus && (
+                    <span className={`inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-semibold ${
+                      todayAttendance.checkInStatus === 'on-time' ? 'bg-green-500' :
+                      todayAttendance.checkInStatus === 'late' ? 'bg-red-500' : 'bg-blue-500'
+                    }`}>
+                      {todayAttendance.checkInStatus === 'on-time' ? '✓ On Time' :
+                       todayAttendance.checkInStatus === 'late' ? '⚠ Late' : '⭐ Early'}
+                    </span>
+                  )}
+                </div>
+
+                {/* Check Out Time */}
+                <div className="bg-white bg-opacity-10 rounded-lg p-2 sm:p-3">
+                  <div className="flex items-center space-x-2 mb-1 sm:mb-2">
+                    <FaSignOutAlt className="w-3 h-3 sm:w-4 sm:h-4 text-orange-300" />
+                    <p className="text-xs font-medium text-teal-100">Check Out</p>
+                  </div>
+                  <p className="text-base sm:text-xl font-bold">
+                    {todayAttendance?.checkOut
+                      ? new Date(todayAttendance.checkOut).toLocaleTimeString('en-IN', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          hour12: true
+                        })
+                      : '--:--'}
+                  </p>
+                  {todayAttendance?.checkOutStatus && (
+                    <span className={`inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-semibold ${
+                      todayAttendance.checkOutStatus === 'on-time' ? 'bg-green-500' :
+                      todayAttendance.checkOutStatus === 'early' ? 'bg-yellow-500' : 'bg-blue-500'
+                    }`}>
+                      {todayAttendance.checkOutStatus === 'on-time' ? '✓ On Time' :
+                       todayAttendance.checkOutStatus === 'early' ? '⚠ Early' : '⭐ Late'}
+                    </span>
+                  )}
+                </div>
+
+                {/* Work Hours */}
+                <div className="bg-white bg-opacity-10 rounded-lg p-2 sm:p-3">
+                  <div className="flex items-center space-x-2 mb-1 sm:mb-2">
+                    <FaClock className="w-3 h-3 sm:w-4 sm:h-4 text-purple-300" />
+                    <p className="text-xs font-medium text-teal-100">Work Hours</p>
+                  </div>
+                  <p className="text-base sm:text-xl font-bold">
+                    {todayAttendance?.workHours
+                      ? `${todayAttendance.workHours}h`
+                      : '--'}
+                  </p>
+                  {todayAttendance?.status && (
+                    <span className={`inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-semibold ${
+                      todayAttendance.status === 'present' ? 'bg-green-500' :
+                      todayAttendance.status === 'half-day' ? 'bg-yellow-500' :
+                      todayAttendance.status === 'in-progress' ? 'bg-blue-500' : 'bg-red-500'
+                    }`}>
+                      {todayAttendance.status === 'present' ? '✓ Full Day' :
+                       todayAttendance.status === 'half-day' ? '½ Half Day' :
+                       todayAttendance.status === 'in-progress' ? '⏳ In Progress' : '✗ Absent'}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Side - Action Buttons */}
+          <div className="flex flex-row sm:flex-col gap-2 sm:gap-3 w-full lg:w-auto">
+            <button
+              onClick={handleClockIn}
+              disabled={attendanceLoading || (todayAttendance && todayAttendance.checkIn)}
+              className="group relative bg-white text-teal-600 hover:bg-teal-50 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed px-4 sm:px-6 py-3 sm:py-4 rounded-xl font-bold text-sm sm:text-base shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all duration-200 flex items-center justify-center space-x-2 flex-1 lg:min-w-[180px]"
+            >
+              <FaSignInAlt className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span>Clock In</span>
+              {todayAttendance?.checkIn && (
+                <span className="absolute -top-1 -right-1 bg-green-500 text-white text-xs px-1.5 py-0.5 rounded-full">
+                  ✓
+                </span>
+              )}
+            </button>
+
+            <button
+              onClick={handleClockOut}
+              disabled={attendanceLoading || !todayAttendance || !todayAttendance.checkIn || todayAttendance.checkOut}
+              className="group relative bg-white text-orange-600 hover:bg-orange-50 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed px-4 sm:px-6 py-3 sm:py-4 rounded-xl font-bold text-sm sm:text-base shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all duration-200 flex items-center justify-center space-x-2 flex-1 lg:min-w-[180px]"
+            >
+              <FaSignOutAlt className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span>Clock Out</span>
+              {todayAttendance?.checkOut && (
+                <span className="absolute -top-1 -right-1 bg-green-500 text-white text-xs px-1.5 py-0.5 rounded-full">
+                  ✓
+                </span>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Office Timing Info */}
+        <div className="mt-3 sm:mt-4 bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-2 sm:p-3">
+          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-6 text-xs">
+            <div className="flex items-center space-x-1 sm:space-x-2">
+              <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-400 rounded-full animate-pulse"></div>
+              <span className="font-medium">Office: 11:00 AM - 7:00 PM</span>
+            </div>
+            <div className="flex items-center space-x-1 sm:space-x-2">
+              <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-blue-400 rounded-full"></div>
+              <span>Full Day: 8+ hrs</span>
+            </div>
+            <div className="flex items-center space-x-1 sm:space-x-2">
+              <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-yellow-400 rounded-full"></div>
+              <span>Half Day: 4-7.99 hrs</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Announcements Section */}
