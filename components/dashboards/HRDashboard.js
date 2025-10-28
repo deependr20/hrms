@@ -1,48 +1,152 @@
 'use client'
 
-import { 
-  FaUsers, FaClock, FaCalendarAlt, FaUserPlus, 
+import { useEffect, useState } from 'react'
+import {
+  FaUsers, FaCalendarAlt, FaUserPlus,
   FaArrowUp, FaArrowDown, FaBriefcase, FaFileAlt,
-  FaExclamationCircle, FaCheckCircle
+  FaExclamationCircle, FaUserClock, FaUserTimes,
+  FaChartLine, FaExclamationTriangle
 } from 'react-icons/fa'
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 
-const hrStatsData = [
-  { title: 'Total Employees', value: '1,234', change: '+12%', icon: FaUsers, color: 'bg-blue-500', trend: 'up' },
-  { title: 'New Hires (This Month)', value: '24', change: '+8', icon: FaUserPlus, color: 'bg-green-500', trend: 'up' },
-  { title: 'Leave Requests', value: '45', change: '+5', icon: FaCalendarAlt, color: 'bg-yellow-500', trend: 'up' },
-  { title: 'Open Positions', value: '18', change: '+6', icon: FaBriefcase, color: 'bg-red-500', trend: 'up' },
-  { title: 'Pending Approvals', value: '12', change: '-3', icon: FaExclamationCircle, color: 'bg-orange-500', trend: 'down' },
-  { title: 'Completed Reviews', value: '89', change: '+15', icon: FaCheckCircle, color: 'bg-purple-500', trend: 'up' },
-]
+// Fetch HR dashboard data
+const fetchHRStats = async () => {
+  try {
+    const token = localStorage.getItem('token')
+    const response = await fetch('/api/dashboard/hr-stats', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+    const data = await response.json()
+    return data.success ? data.data : null
+  } catch (error) {
+    console.error('Error fetching HR stats:', error)
+    return null
+  }
+}
 
-const hiringData = [
-  { month: 'Jan', hires: 18, departures: 5 },
-  { month: 'Feb', hires: 22, departures: 8 },
-  { month: 'Mar', hires: 25, departures: 6 },
-  { month: 'Apr', hires: 20, departures: 12 },
-  { month: 'May', hires: 28, departures: 7 },
-  { month: 'Jun', hires: 24, departures: 9 },
-]
+export default function HRDashboard() {
+  const [stats, setStats] = useState(null)
+  const [loading, setLoading] = useState(true)
 
-const leaveData = [
-  { name: 'Sick Leave', value: 45, color: '#ef4444' },
-  { name: 'Annual Leave', value: 120, color: '#10b981' },
-  { name: 'Personal Leave', value: 35, color: '#f59e0b' },
-  { name: 'Maternity/Paternity', value: 15, color: '#8b5cf6' },
-]
+  useEffect(() => {
+    const loadStats = async () => {
+      const data = await fetchHRStats()
+      setStats(data)
+      setLoading(false)
+    }
+    loadStats()
+  }, [])
 
-export default function HRDashboard({ user }) {
+  if (loading) {
+    return (
+      <div className="page-container">
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
+        </div>
+      </div>
+    )
+  }
+
+  // Create stats cards data from API response
+  const hrStatsData = stats ? [
+    {
+      title: 'Total Employees',
+      value: stats.totalEmployees.value.toString(),
+      change: `${stats.totalEmployees.changePercent}%`,
+      icon: FaUsers,
+      color: 'bg-blue-500',
+      trend: stats.totalEmployees.trend
+    },
+    {
+      title: 'Active Today',
+      value: `${stats.activeToday.value}/${stats.activeToday.total}`,
+      change: `${stats.activeToday.percentage}%`,
+      icon: FaUserClock,
+      color: 'bg-green-500',
+      trend: 'up'
+    },
+    {
+      title: 'On Leave Today',
+      value: stats.onLeaveToday.value.toString(),
+      change: `${stats.onLeaveToday.percentage}%`,
+      icon: FaCalendarAlt,
+      color: 'bg-yellow-500',
+      trend: 'neutral'
+    },
+    {
+      title: 'Late Today',
+      value: stats.lateToday.value.toString(),
+      change: `${stats.lateToday.percentage}%`,
+      icon: FaUserTimes,
+      color: 'bg-red-500',
+      trend: 'down'
+    },
+    {
+      title: 'Pending Approvals',
+      value: stats.pendingApprovals.leaves.toString(),
+      change: 'Leaves',
+      icon: FaExclamationCircle,
+      color: 'bg-orange-500',
+      trend: 'neutral'
+    },
+    {
+      title: 'Open Positions',
+      value: stats.openPositions.value.toString(),
+      change: 'Active',
+      icon: FaBriefcase,
+      color: 'bg-purple-500',
+      trend: 'up'
+    },
+    {
+      title: 'PIP Cases',
+      value: stats.pipCases.value.toString(),
+      change: 'Active',
+      icon: FaExclamationTriangle,
+      color: 'bg-red-600',
+      trend: 'neutral'
+    },
+    {
+      title: 'Attrition Rate',
+      value: `${stats.attritionRate.value}%`,
+      change: `${stats.attritionRate.leftThisMonth} left`,
+      icon: FaChartLine,
+      color: 'bg-indigo-500',
+      trend: stats.attritionRate.value > 5 ? 'up' : 'down'
+    }
+  ] : []
+
   return (
     <div className="page-container space-y-6">
       {/* Welcome Section */}
       <div className="bg-gradient-to-r from-green-500 to-teal-600 rounded-lg p-3 sm:p-6 text-white">
         <h1 className="text-2xl sm:text-3xl font-bold mb-2">HR Dashboard 👥</h1>
         <p className="text-green-100 text-sm sm:text-base">Manage people, processes, and organizational growth</p>
+        {stats && (
+          <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+            <div>
+              <div className="text-2xl font-bold">{stats.totalEmployees.value}</div>
+              <div className="text-green-100 text-sm">Total Employees</div>
+            </div>
+            <div>
+              <div className="text-2xl font-bold">{stats.genderRatio.malePercent}% / {stats.genderRatio.femalePercent}%</div>
+              <div className="text-green-100 text-sm">Male / Female</div>
+            </div>
+            <div>
+              <div className="text-2xl font-bold">{stats.attendanceRate.value}%</div>
+              <div className="text-green-100 text-sm">Attendance Rate</div>
+            </div>
+            <div>
+              <div className="text-2xl font-bold">{stats.newHires.value}</div>
+              <div className="text-green-100 text-sm">New Hires</div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
         {hrStatsData.map((stat, index) => (
           <div key={index} className="bg-white rounded-lg shadow-md p-3 sm:p-6 hover:shadow-lg transition-shadow">
             <div className="flex items-center justify-between">
@@ -52,13 +156,15 @@ export default function HRDashboard({ user }) {
                 <div className="flex items-center mt-1 sm:mt-2">
                   {stat.trend === 'up' ? (
                     <FaArrowUp className="w-3 h-3 sm:w-4 sm:h-4 text-green-500 mr-1 flex-shrink-0" />
-                  ) : (
+                  ) : stat.trend === 'down' ? (
                     <FaArrowDown className="w-3 h-3 sm:w-4 sm:h-4 text-red-500 mr-1 flex-shrink-0" />
-                  )}
-                  <span className={`text-xs sm:text-sm font-medium truncate ${stat.trend === 'up' ? 'text-green-500' : 'text-red-500'}`}>
+                  ) : null}
+                  <span className={`text-xs sm:text-sm font-medium truncate ${
+                    stat.trend === 'up' ? 'text-green-500' :
+                    stat.trend === 'down' ? 'text-red-500' : 'text-gray-500'
+                  }`}>
                     {stat.change}
                   </span>
-                  <span className="text-gray-500 text-xs sm:text-sm ml-1 hidden sm:inline">vs last month</span>
                 </div>
               </div>
               <div className={`${stat.color} p-2 sm:p-4 rounded-lg flex-shrink-0`}>
@@ -69,134 +175,220 @@ export default function HRDashboard({ user }) {
         ))}
       </div>
 
-      {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Hiring Trends */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Hiring vs Departures Trend</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={hiringData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Line type="monotone" dataKey="hires" stroke="#10b981" strokeWidth={3} name="New Hires" />
-              <Line type="monotone" dataKey="departures" stroke="#ef4444" strokeWidth={3} name="Departures" />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
+      {/* Department Distribution & Gender Ratio */}
+      {stats && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Department Distribution */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Department Distribution</h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={stats.departmentStats}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="_id" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="count" fill="#3b82f6" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
 
-        {/* Leave Distribution */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Leave Types Distribution</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={leaveData} layout="horizontal">
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis type="number" />
-              <YAxis dataKey="name" type="category" width={100} />
-              <Tooltip />
-              <Bar dataKey="value" fill="#8884d8">
-                {leaveData.map((entry, index) => (
-                  <Bar key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+          {/* Gender Ratio */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Gender Distribution</h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={[
+                    { name: 'Male', value: stats.genderRatio.male, color: '#3b82f6' },
+                    { name: 'Female', value: stats.genderRatio.female, color: '#ec4899' }
+                  ]}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {[
+                    { name: 'Male', value: stats.genderRatio.male, color: '#3b82f6' },
+                    { name: 'Female', value: stats.genderRatio.female, color: '#ec4899' }
+                  ].map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* HR Activities & Quick Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Recent HR Activities */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent HR Activities</h3>
-          <div className="space-y-4">
-            {[
-              { action: 'New employee onboarded', name: 'Sarah Johnson - Engineering', time: '2 hours ago', color: 'bg-green-100 text-green-800' },
-              { action: 'Leave request approved', name: 'Mike Chen - 3 days annual leave', time: '4 hours ago', color: 'bg-blue-100 text-blue-800' },
-              { action: 'Performance review scheduled', name: 'Team Alpha - Q4 Reviews', time: '6 hours ago', color: 'bg-purple-100 text-purple-800' },
-              { action: 'Job posting published', name: 'Senior Developer - Remote', time: '1 day ago', color: 'bg-yellow-100 text-yellow-800' },
-              { action: 'Policy updated', name: 'Remote Work Guidelines', time: '2 days ago', color: 'bg-indigo-100 text-indigo-800' },
-            ].map((activity, index) => (
-              <div key={index} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
-                <div className="flex items-center space-x-3">
-                  <div className={`w-2 h-2 rounded-full ${activity.color.split(' ')[0]}`}></div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">{activity.action}</p>
-                    <p className="text-xs text-gray-500">{activity.name}</p>
-                  </div>
-                </div>
-                <span className="text-xs text-gray-400">{activity.time}</span>
+      {/* Key Metrics Row */}
+      {stats && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Today's Attendance Summary */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Today&apos;s Attendance</h3>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Present</span>
+                <span className="font-semibold text-green-600">{stats.activeToday.value}</span>
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* HR Quick Actions */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">HR Quick Actions</h3>
-          <div className="grid grid-cols-2 gap-4">
-            {[
-              { name: 'Add Employee', icon: FaUserPlus, href: '/dashboard/employees/add', color: 'bg-green-500' },
-              { name: 'Review Leaves', icon: FaCalendarAlt, href: '/dashboard/leave/approvals', color: 'bg-blue-500' },
-              { name: 'Post Job', icon: FaBriefcase, href: '/dashboard/recruitment/jobs', color: 'bg-purple-500' },
-              { name: 'Generate Report', icon: FaFileAlt, href: '/dashboard/reports', color: 'bg-red-500' },
-            ].map((action, index) => (
-              <a
-                key={index}
-                href={action.href}
-                className="flex flex-col items-center justify-center p-6 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
-              >
-                <div className={`${action.color} p-3 rounded-lg mb-3`}>
-                  <action.icon className="w-6 h-6 text-white" />
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">On Leave</span>
+                <span className="font-semibold text-yellow-600">{stats.onLeaveToday.value}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Late</span>
+                <span className="font-semibold text-red-600">{stats.lateToday.value}</span>
+              </div>
+              <div className="pt-2 border-t">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-gray-900">Attendance Rate</span>
+                  <span className="font-bold text-blue-600">{stats.attendanceRate.value}%</span>
                 </div>
-                <span className="text-sm font-medium text-gray-900 text-center">{action.name}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* System Health */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">System Health</h3>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Attrition Rate</span>
+                <span className={`font-semibold ${stats.attritionRate.value > 5 ? 'text-red-600' : 'text-green-600'}`}>
+                  {stats.attritionRate.value}%
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">PIP Cases</span>
+                <span className={`font-semibold ${stats.pipCases.value > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                  {stats.pipCases.value}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Open Positions</span>
+                <span className="font-semibold text-blue-600">{stats.openPositions.value}</span>
+              </div>
+              <div className="pt-2 border-t">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-gray-900">Payroll Status</span>
+                  <span className={`font-bold ${stats.payrollStatus.generated ? 'text-green-600' : 'text-yellow-600'}`}>
+                    {stats.payrollStatus.generated ? 'Generated' : 'Pending'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Actions */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+            <div className="space-y-3">
+              <a
+                href="/dashboard/employees/add"
+                className="flex items-center p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+              >
+                <FaUserPlus className="w-5 h-5 text-blue-600 mr-3" />
+                <span className="text-sm font-medium text-blue-900">Add Employee</span>
               </a>
-            ))}
+              <a
+                href="/dashboard/leave/approvals"
+                className="flex items-center p-3 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition-colors"
+              >
+                <FaCalendarAlt className="w-5 h-5 text-yellow-600 mr-3" />
+                <span className="text-sm font-medium text-yellow-900">
+                  Review Leaves ({stats.pendingApprovals.leaves})
+                </span>
+              </a>
+              <a
+                href="/dashboard/recruitment"
+                className="flex items-center p-3 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
+              >
+                <FaBriefcase className="w-5 h-5 text-purple-600 mr-3" />
+                <span className="text-sm font-medium text-purple-900">Manage Jobs</span>
+              </a>
+              <a
+                href="/dashboard/reports"
+                className="flex items-center p-3 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
+              >
+                <FaFileAlt className="w-5 h-5 text-green-600 mr-3" />
+                <span className="text-sm font-medium text-green-900">Generate Reports</span>
+              </a>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Pending Approvals */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Pending Approvals</h3>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employee</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Range</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {[
-                { name: 'John Doe', type: 'Annual Leave', dates: 'Dec 20-24, 2024', status: 'Pending' },
-                { name: 'Jane Smith', type: 'Sick Leave', dates: 'Dec 15, 2024', status: 'Pending' },
-                { name: 'Mike Johnson', type: 'Personal Leave', dates: 'Dec 22-23, 2024', status: 'Pending' },
-              ].map((request, index) => (
-                <tr key={index}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{request.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{request.type}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{request.dates}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                      {request.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <button className="text-green-600 hover:text-green-900 mr-3">Approve</button>
-                    <button className="text-red-600 hover:text-red-900">Reject</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {/* Alerts & Notifications */}
+      {stats && (
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">System Alerts</h3>
+          <div className="space-y-3">
+            {stats.pipCases.value > 0 && (
+              <div className="flex items-center p-3 bg-red-50 rounded-lg">
+                <FaExclamationTriangle className="w-5 h-5 text-red-600 mr-3" />
+                <div>
+                  <p className="text-sm font-medium text-red-900">
+                    {stats.pipCases.value} employee(s) on Performance Improvement Plan
+                  </p>
+                  <p className="text-xs text-red-700">Requires immediate attention</p>
+                </div>
+              </div>
+            )}
+
+            {stats.attritionRate.value > 5 && (
+              <div className="flex items-center p-3 bg-yellow-50 rounded-lg">
+                <FaChartLine className="w-5 h-5 text-yellow-600 mr-3" />
+                <div>
+                  <p className="text-sm font-medium text-yellow-900">
+                    High attrition rate: {stats.attritionRate.value}%
+                  </p>
+                  <p className="text-xs text-yellow-700">Consider retention strategies</p>
+                </div>
+              </div>
+            )}
+
+            {stats.lateToday.value > (stats.totalEmployees.value * 0.1) && (
+              <div className="flex items-center p-3 bg-orange-50 rounded-lg">
+                <FaUserTimes className="w-5 h-5 text-orange-600 mr-3" />
+                <div>
+                  <p className="text-sm font-medium text-orange-900">
+                    High late arrivals today: {stats.lateToday.value} employees
+                  </p>
+                  <p className="text-xs text-orange-700">Review attendance policies</p>
+                </div>
+              </div>
+            )}
+
+            {!stats.payrollStatus.generated && (
+              <div className="flex items-center p-3 bg-blue-50 rounded-lg">
+                <FaFileAlt className="w-5 h-5 text-blue-600 mr-3" />
+                <div>
+                  <p className="text-sm font-medium text-blue-900">
+                    Payroll pending for {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                  </p>
+                  <p className="text-xs text-blue-700">Generate payslips before month end</p>
+                </div>
+              </div>
+            )}
+
+            {stats.pendingApprovals.leaves > 0 && (
+              <div className="flex items-center p-3 bg-purple-50 rounded-lg">
+                <FaCalendarAlt className="w-5 h-5 text-purple-600 mr-3" />
+                <div>
+                  <p className="text-sm font-medium text-purple-900">
+                    {stats.pendingApprovals.leaves} leave request(s) pending approval
+                  </p>
+                  <p className="text-xs text-purple-700">Review and approve pending requests</p>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }
