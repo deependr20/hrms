@@ -34,13 +34,13 @@ export default function Header({ toggleSidebar }) {
   if (!mounted) {
     return (
       <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-10">
-        <div className="flex items-center justify-between px-2 sm:px-4 lg:px-6 py-3 sm:py-4">
+        <div className="flex items-center justify-between px-1 sm:px-4 lg:px-6  md:ml-0 md:m-0  m-[-15px] ml-[-10px] mr-[-10px] sm:py-4">
           <div className="flex items-center space-x-2 sm:space-x-4">
             <button
               onClick={toggleSidebar}
               className="lg:hidden text-gray-600 hover:text-gray-900 focus:outline-none p-1"
             >
-              <FaBars className="w-5 h-5 sm:w-6 sm:h-6" />
+              <FaBars className="w-8 h-8 sm:w-6 sm:h-6" />
             </button>
           </div>
           <div className="flex items-center space-x-2 sm:space-x-4">
@@ -53,7 +53,7 @@ export default function Header({ toggleSidebar }) {
 
   return (
     <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-10">
-      <div className="flex items-center justify-between px-1 sm:px-4 lg:px-6 md:m-0  m-[-10px]  sm:py-4">
+      <div className="flex items-center justify-between px-1 sm:px-4 lg:px-6  md:ml-0 md:m-0  m-[-15px] ml-[-10px] mr-[-10px] sm:py-4">
         {/* Left side */}
         <div className="flex items-center space-x-2 sm:space-x-4">
           <button
@@ -85,7 +85,7 @@ export default function Header({ toggleSidebar }) {
               onClick={() => setShowNotifications(!showNotifications)}
               className="relative p-1.5 sm:p-2  text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
             >
-              <FaBell className="w-[30px] h-[30px] sm:w-5 sm:h-5 mt-[-5px] md:mt-0 md:mr-0 mr-[-5px]" />
+              <FaBell className="w-[25px] h-[25px] sm:w-5 sm:h-5 mt-[-5px] md:mt-0 md:mr-0 mr-[-5px]" />
               <div className="absolute top-0.5 right-0.5 sm:top-1 sm:right-1 w-[1px] h-[1px] p-[5px]  bg-red-600 rounded-full"></div>
             </button>
 
@@ -123,7 +123,7 @@ export default function Header({ toggleSidebar }) {
               onClick={() => setShowProfileMenu(!showProfileMenu)}
               className="flex items-center space-x-2 sm:space-x-3 p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors"
             >
-              <div className="w-[40px] h-[40px] sm:w-8 sm:h-8 bg-primary-500 rounded-full flex items-center justify-center">
+              <div className="w-[30px] h-[30px] sm:w-8 sm:h-8 bg-primary-500 rounded-full flex items-center justify-center">
                 <FaUser className="w-4 h-4 sm:w-4 sm:h-4 text-white" />
               </div>
               <div className="hidden md:block text-left">

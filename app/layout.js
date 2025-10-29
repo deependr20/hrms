@@ -10,10 +10,10 @@ export const metadata = {
   title: 'Tailo HRMS - Human Resource Management System',
   description: 'Complete HRMS solution for managing employees, attendance, payroll, and more',
   manifest: '/manifest.json',
-  themeColor: '#5F9EA0',
+  themeColor: '#ffffff',
   appleWebApp: {
     capable: true,
-    statusBarStyle: 'default',
+    statusBarStyle: 'light-content',
     title: 'Tailo HRMS',
   },
   icons: {
@@ -43,13 +43,13 @@ export default function RootLayout({ children }) {
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
         <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#5F9EA0" />
+        <meta name="theme-color" content="#ffffff" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="light-content" />
         <meta name="apple-mobile-web-app-title" content="Tailo HRMS" />
         <meta name="application-name" content="Tailo HRMS" />
-        <meta name="msapplication-TileColor" content="#5F9EA0" />
+        <meta name="msapplication-TileColor" content="#ffffff" />
         <meta name="msapplication-TileImage" content="/icons/icon-144x144.png" />
         <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png" />
         <link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192x192.png" />
