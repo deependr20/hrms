@@ -1,9 +1,8 @@
 [{
-  "relation": ["delegate_permission/common.handle_all_urls"],
-  "target": {
-    "namespace": "android_app",
-    "package_name": "sbs.zenova.twa",
-    "sha256_cert_fingerprints": ["D7:6D:0B:B9:9B:B9:6A:8C:15:F0:EE:9A:E3:F8:21:65:20:4C:CB:91:F3:80:E4:0D:C4:FC:6C:BF:24:32:3D:E1"]
-  }
-}]
-
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "sbs.zenova.twa",
+        "sha256_cert_fingerprints": ["CE:3D:35:55:FA:8C:6A:5F:C2:2A:2F:6F:4A:F4:ED:1C:B9:6C:17:A7:FE:CB:D5:F7:89:2F:C7:0E:31:93:B4:F8"]
+      }
+    }]

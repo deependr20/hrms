@@ -53,7 +53,7 @@ export default function Header({ toggleSidebar }) {
 
   return (
     <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-10">
-      <div className="flex items-center justify-between px-1 sm:px-4 lg:px-6  sm:py-4">
+      <div className="flex items-center justify-between px-1 sm:px-4 lg:px-6 md:m-0  m-[-10px]  sm:py-4">
         {/* Left side */}
         <div className="flex items-center space-x-2 sm:space-x-4">
           <button
