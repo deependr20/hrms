@@ -1,9 +1,10 @@
 {
-  "name": "Tailo HRMS - Human Resource Management System",
-  "short_name": "Tailo",
+  "name": "Talio HRMS - Human Resource Management System",
+  "short_name": "Talio",
   "description": "Complete HRMS solution for managing employees, attendance, payroll, and more",
   "start_url": "/",
   "display": "standalone",
+  "display_override": ["standalone", "fullscreen"],
   "background_color": "#ffffff",
   "theme_color": "#ffffff",
   "orientation": "portrait-primary",
