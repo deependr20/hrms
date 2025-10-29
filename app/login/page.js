@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa'
@@ -13,6 +13,25 @@ export default function LoginPage() {
   })
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [checking, setChecking] = useState(true)
+
+  // Check if user is already logged in
+  useEffect(() => {
+    const checkSession = () => {
+      const token = localStorage.getItem('token')
+      const user = localStorage.getItem('user')
+
+      if (token && user) {
+        // User is already logged in, redirect to dashboard
+        router.push('/dashboard')
+      } else {
+        // No session found, show login page
+        setChecking(false)
+      }
+    }
+
+    checkSession()
+  }, [router])
 
   const handleChange = (e) => {
     setFormData({
@@ -54,6 +73,18 @@ export default function LoginPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  // Show loading screen while checking session
+  if (checking) {
+    return (
+      <div className="min-h-screen text-black flex items-center justify-center bg-gradient-to-br from-primary-50 to-primary-100">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+          <p className="mt-4 text-gray-600">Checking session...</p>
+        </div>
+      </div>
+    )
   }
 
   return (

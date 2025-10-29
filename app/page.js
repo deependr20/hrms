@@ -7,8 +7,17 @@ export default function Home() {
   const router = useRouter()
 
   useEffect(() => {
-    // Redirect to login page
-    router.push('/login')
+    // Check if user is already logged in
+    const token = localStorage.getItem('token')
+    const user = localStorage.getItem('user')
+
+    if (token && user) {
+      // User is logged in, redirect to dashboard
+      router.push('/dashboard')
+    } else {
+      // No session, redirect to login page
+      router.push('/login')
+    }
   }, [router])
 
   return (
