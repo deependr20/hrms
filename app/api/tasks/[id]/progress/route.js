@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import connectDB from '@/lib/mongodb'
 import Task from '@/models/Task'
 import Employee from '@/models/Employee'
+import User from '@/models/User'
 import { verifyToken } from '@/lib/auth'
 
 // PUT - Update task progress
@@ -19,6 +20,9 @@ export async function PUT(request, { params }) {
 
     await connectDB()
 
+    const currentUser = await User.findById(decoded.userId).select('employeeId role')
+    const employeeId = currentUser?.employeeId
+
     const { id } = params
     const { progress, status, notes, timeSpent, completionNotes, deliverables } = await request.json()
 
@@ -31,7 +35,7 @@ export async function PUT(request, { params }) {
     }
 
     // Check if user can update progress
-    const canUpdate = await checkProgressUpdatePermission(decoded.userId, task)
+    const canUpdate = await checkProgressUpdatePermission(employeeId, task, decoded.role)
     if (!canUpdate.allowed) {
       return NextResponse.json(
         { success: false, message: canUpdate.reason },
@@ -44,7 +48,7 @@ export async function PUT(request, { params }) {
 
     // Update progress
     if (progress !== undefined) {
-      task.updateProgress(progress, decoded.userId, notes)
+      task.updateProgress(progress, employeeId, notes)
     }
 
     // Update status if provided
@@ -54,7 +58,7 @@ export async function PUT(request, { params }) {
       // Add status history
       task.statusHistory.push({
         status: `Status changed from ${oldStatus} to ${status}`,
-        changedBy: decoded.userId,
+        changedBy: employeeId,
         changedAt: new Date(),
         reason: notes || 'Status update'
       })
@@ -62,9 +66,9 @@ export async function PUT(request, { params }) {
       // Handle completion
       if (status === 'completed') {
         task.completedAt = new Date()
-        task.completedBy = decoded.userId
+        task.completedBy = employeeId
         task.progress = 100
-        
+
         if (completionNotes) {
           task.completionNotes = completionNotes
         }
@@ -87,7 +91,7 @@ export async function PUT(request, { params }) {
       const now = new Date()
       const startTime = new Date(now.getTime() - (timeSpent * 60 * 1000)) // timeSpent in minutes
       
-      task.addTimeEntry(decoded.userId, startTime, now, notes || 'Progress update')
+      task.addTimeEntry(employeeId, startTime, now, notes || 'Progress update')
     }
 
     await task.save()
@@ -144,6 +148,9 @@ export async function POST(request, { params }) {
 
     await connectDB()
 
+    const currentUser = await User.findById(decoded.userId).select('employeeId role')
+    const employeeId = currentUser?.employeeId
+
     const { id } = params
     const { startTime, endTime, duration, description, billable } = await request.json()
 
@@ -156,7 +163,7 @@ export async function POST(request, { params }) {
     }
 
     // Check if user can log time
-    const canLogTime = await checkTimeLogPermission(decoded.userId, task)
+    const canLogTime = await checkTimeLogPermission(employeeId, task)
     if (!canLogTime.allowed) {
       return NextResponse.json(
         { success: false, message: canLogTime.reason },
@@ -165,7 +172,7 @@ export async function POST(request, { params }) {
     }
 
     let timeEntry = {
-      employee: decoded.userId,
+      employee: employeeId,
       description: description || 'Time logged',
       billable: billable || false,
       createdAt: new Date()
@@ -238,7 +245,7 @@ export async function POST(request, { params }) {
 }
 
 // Helper functions
-async function checkProgressUpdatePermission(userId, task) {
+async function checkProgressUpdatePermission(userId, task, userRole) {
   try {
     const user = await Employee.findById(userId)
     if (!user) {
@@ -246,9 +253,9 @@ async function checkProgressUpdatePermission(userId, task) {
     }
 
     // Task assignees can update progress
-    const isAssignee = task.assignedTo.some(a => 
+    const isAssignee = task.assignedTo.some(a =>
       a.employee.toString() === userId.toString() && a.status === 'accepted')
-    
+
     if (isAssignee) {
       return { allowed: true, reason: 'task_assignee' }
     }
@@ -259,19 +266,19 @@ async function checkProgressUpdatePermission(userId, task) {
     }
 
     // Admin and HR can update any task
-    if (['admin', 'hr'].includes(user.role)) {
+    if (['admin', 'hr'].includes(userRole)) {
       return { allowed: true, reason: 'elevated_permissions' }
     }
 
     // Managers can update their team's tasks
-    if (user.role === 'manager') {
+    if (userRole === 'manager') {
       const assignees = await Employee.find({
         _id: { $in: task.assignedTo.map(a => a.employee) }
       })
 
-      const canUpdateAll = assignees.every(assignee => 
+      const canUpdateAll = assignees.every(assignee =>
         assignee.reportingManager?.toString() === userId.toString())
-      
+
       if (canUpdateAll) {
         return { allowed: true, reason: 'manager_authority' }
       }

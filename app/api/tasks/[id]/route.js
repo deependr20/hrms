@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import connectDB from '@/lib/mongodb'
 import Task from '@/models/Task'
 import Employee from '@/models/Employee'
+import User from '@/models/User'
 import { verifyToken } from '@/lib/auth'
 
 // GET - Fetch single task by ID
@@ -19,6 +20,9 @@ export async function GET(request, { params }) {
 
     await connectDB()
 
+    const currentUser = await User.findById(decoded.userId).select('employeeId role')
+    const employeeId = currentUser?.employeeId
+
     const taskId = params.id
 
     // Find the task
@@ -27,6 +31,7 @@ export async function GET(request, { params }) {
       .populate('assignedTo.employee', 'firstName lastName employeeCode department')
       .populate('project', 'name projectCode')
       .populate('parentTask', 'title taskNumber')
+      .populate('subtasks', 'title taskNumber status progress dueDate')
 
     if (!task) {
       return NextResponse.json(
@@ -36,7 +41,7 @@ export async function GET(request, { params }) {
     }
 
     // Check if user has permission to view this task
-    const hasPermission = await checkTaskViewPermission(decoded.userId, task, decoded.role)
+    const hasPermission = await checkTaskViewPermission(employeeId, task, decoded.role)
     if (!hasPermission) {
       return NextResponse.json(
         { success: false, message: 'You do not have permission to view this task' },
@@ -73,6 +78,9 @@ export async function PUT(request, { params }) {
 
     await connectDB()
 
+    const currentUser = await User.findById(decoded.userId).select('employeeId role')
+    const employeeId = currentUser?.employeeId
+
     const taskId = params.id
     const updateData = await request.json()
 
@@ -85,7 +93,7 @@ export async function PUT(request, { params }) {
     }
 
     // Check if user has permission to update this task
-    const hasPermission = await checkTaskUpdatePermission(decoded.userId, task, decoded.role)
+    const hasPermission = await checkTaskUpdatePermission(employeeId, task, decoded.role)
     if (!hasPermission) {
       return NextResponse.json(
         { success: false, message: 'You do not have permission to update this task' },
@@ -136,6 +144,9 @@ export async function DELETE(request, { params }) {
 
     await connectDB()
 
+    const currentUser = await User.findById(decoded.userId).select('employeeId role')
+    const employeeId = currentUser?.employeeId
+
     const taskId = params.id
 
     const task = await Task.findById(taskId)
@@ -147,7 +158,7 @@ export async function DELETE(request, { params }) {
     }
 
     // Check if user has permission to delete this task
-    const hasPermission = await checkTaskDeletePermission(decoded.userId, task, decoded.role)
+    const hasPermission = await checkTaskDeletePermission(employeeId, task, decoded.role)
     if (!hasPermission) {
       return NextResponse.json(
         { success: false, message: 'You do not have permission to delete this task' },

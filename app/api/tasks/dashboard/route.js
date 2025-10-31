@@ -3,6 +3,7 @@ import connectDB from '@/lib/mongodb'
 import Task from '@/models/Task'
 import Employee from '@/models/Employee'
 import Project from '@/models/Project'
+import User from '@/models/User'
 import { verifyToken } from '@/lib/auth'
 
 // GET - Get comprehensive task dashboard data
@@ -20,6 +21,9 @@ export async function GET(request) {
 
     await connectDB()
 
+    const currentUser = await User.findById(decoded.userId).select('employeeId role')
+    const currentEmployeeId = currentUser?.employeeId
+
     const { searchParams } = new URL(request.url)
     const view = searchParams.get('view') || 'personal' // personal, team, department, organization
     const timeframe = searchParams.get('timeframe') || '30' // days
@@ -29,37 +33,37 @@ export async function GET(request) {
     startDate.setDate(startDate.getDate() - parseInt(timeframe))
 
     let taskQuery = {}
-    let teamMemberIds = [decoded.userId]
+    let teamMemberIds = [currentEmployeeId]
 
     // Build query based on view and user role
     if (view === 'personal') {
       taskQuery.$or = [
-        { 'assignedTo.employee': decoded.userId },
-        { assignedBy: decoded.userId }
+        { 'assignedTo.employee': currentEmployeeId },
+        { assignedBy: { $in: [currentEmployeeId, decoded.userId] } }
       ]
     } else if (view === 'team' && ['manager', 'hr', 'admin'].includes(decoded.role)) {
       // Get team members
-      const teamMembers = await Employee.find({ 
-        reportingManager: decoded.userId,
+      const teamMembers = await Employee.find({
+        reportingManager: currentEmployeeId,
         status: 'active'
       }).select('_id')
-      
+
       teamMemberIds = teamMembers.map(member => member._id)
-      teamMemberIds.push(decoded.userId)
-      
+      teamMemberIds.push(currentEmployeeId)
+
       taskQuery.$or = [
         { 'assignedTo.employee': { $in: teamMemberIds } },
         { assignedBy: { $in: teamMemberIds } }
       ]
     } else if (view === 'department' && ['hr', 'admin'].includes(decoded.role)) {
-      const user = await Employee.findById(decoded.userId)
-      const deptEmployees = await Employee.find({ 
-        department: user.department,
+      const userEmp = await Employee.findById(currentEmployeeId)
+      const deptEmployees = await Employee.find({
+        department: userEmp?.department,
         status: 'active'
       }).select('_id')
-      
+
       teamMemberIds = deptEmployees.map(emp => emp._id)
-      
+
       taskQuery.$or = [
         { 'assignedTo.employee': { $in: teamMemberIds } },
         { assignedBy: { $in: teamMemberIds } }
@@ -69,8 +73,8 @@ export async function GET(request) {
     } else {
       // Default to personal view if user doesn't have permission
       taskQuery.$or = [
-        { 'assignedTo.employee': decoded.userId },
-        { assignedBy: decoded.userId }
+        { 'assignedTo.employee': currentEmployeeId },
+        { assignedBy: { $in: [currentEmployeeId, decoded.userId] } }
       ]
     }
 

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import connectDB from '@/lib/mongodb'
 import Task from '@/models/Task'
 import Employee from '@/models/Employee'
+import User from '@/models/User'
 import { verifyToken } from '@/lib/auth'
 
 // POST - Assign or reassign task to employees
@@ -18,6 +19,10 @@ export async function POST(request) {
     }
 
     await connectDB()
+
+    const currentUser = await User.findById(decoded.userId).select('employeeId role')
+    const employeeId = currentUser?.employeeId
+    const userRole = currentUser?.role || decoded.role
 
     const { taskId, assignees, action, reason } = await request.json()
 
@@ -37,7 +42,7 @@ export async function POST(request) {
     }
 
     // Check permissions
-    const canModify = await checkTaskModificationPermission(decoded.userId, task)
+    const canModify = await checkTaskModificationPermission(employeeId, task, userRole)
     if (!canModify.allowed) {
       return NextResponse.json(
         { success: false, message: canModify.reason },
@@ -47,7 +52,7 @@ export async function POST(request) {
 
     // Validate assignment permissions for each assignee
     for (const assignee of assignees) {
-      const canAssign = await checkAssignmentPermission(decoded.userId, assignee.employee)
+      const canAssign = await checkAssignmentPermission(employeeId, assignee.employee, userRole)
       if (!canAssign.allowed) {
         return NextResponse.json(
           { success: false, message: `Cannot assign to ${assignee.employee}: ${canAssign.reason}` },
@@ -78,7 +83,7 @@ export async function POST(request) {
             task.assignmentHistory.push({
               action: 'assigned',
               to: assignee.employee,
-              performedBy: decoded.userId,
+              performedBy: employeeId,
               timestamp: new Date(),
               reason: reason || 'Task assignment'
             })
@@ -105,7 +110,7 @@ export async function POST(request) {
             action: 'reassigned',
             from: oldAssignees[0], // Primary old assignee
             to: assignee.employee,
-            performedBy: decoded.userId,
+            performedBy: employeeId,
             timestamp: new Date(),
             reason: reason || 'Task reassignment'
           })
@@ -115,9 +120,9 @@ export async function POST(request) {
 
       case 'delegate':
         // Delegate from current user to new assignees
-        const currentAssignment = task.assignedTo.find(a => 
-          a.employee.toString() === decoded.userId.toString())
-        
+        const currentAssignment = task.assignedTo.find(a =>
+          a.employee.toString() === employeeId.toString())
+
         if (!currentAssignment) {
           return NextResponse.json(
             { success: false, message: 'You are not assigned to this task' },
@@ -141,9 +146,9 @@ export async function POST(request) {
           // Add to assignment history
           task.assignmentHistory.push({
             action: 'delegated',
-            from: decoded.userId,
+            from: employeeId,
             to: assignee.employee,
-            performedBy: decoded.userId,
+            performedBy: employeeId,
             timestamp: new Date(),
             reason: reason || 'Task delegation'
           })
@@ -204,6 +209,9 @@ export async function PUT(request) {
 
     await connectDB()
 
+    const currentUser = await User.findById(decoded.userId).select('employeeId role')
+    const employeeId = currentUser?.employeeId
+
     const { taskId, action, reason } = await request.json()
 
     if (!taskId || !action) {
@@ -222,9 +230,9 @@ export async function PUT(request) {
     }
 
     // Find the assignment for current user
-    const assignment = task.assignedTo.find(a => 
-      a.employee.toString() === decoded.userId.toString())
-    
+    const assignment = task.assignedTo.find(a =>
+      a.employee.toString() === employeeId.toString())
+
     if (!assignment) {
       return NextResponse.json(
         { success: false, message: 'You are not assigned to this task' },
@@ -250,8 +258,8 @@ export async function PUT(request) {
         // Add to assignment history
         task.assignmentHistory.push({
           action: 'accepted',
-          to: decoded.userId,
-          performedBy: decoded.userId,
+          to: employeeId,
+          performedBy: employeeId,
           timestamp: new Date(),
           reason: reason || 'Assignment accepted'
         })
@@ -266,8 +274,8 @@ export async function PUT(request) {
         // Add to assignment history
         task.assignmentHistory.push({
           action: 'rejected',
-          to: decoded.userId,
-          performedBy: decoded.userId,
+          to: employeeId,
+          performedBy: employeeId,
           timestamp: new Date(),
           reason: reason || 'Assignment rejected'
         })
@@ -306,7 +314,7 @@ export async function PUT(request) {
 }
 
 // Helper functions
-async function checkTaskModificationPermission(userId, task) {
+async function checkTaskModificationPermission(userId, task, userRole) {
   try {
     const user = await Employee.findById(userId)
     if (!user) {
@@ -319,28 +327,28 @@ async function checkTaskModificationPermission(userId, task) {
     }
 
     // Admin and HR can modify any task
-    if (['admin', 'hr'].includes(user.role)) {
+    if (['admin', 'hr'].includes(userRole)) {
       return { allowed: true, reason: 'elevated_permissions' }
     }
 
     // Managers can modify tasks assigned to their team
-    if (user.role === 'manager') {
+    if (userRole === 'manager') {
       const assignees = await Employee.find({
         _id: { $in: task.assignedTo.map(a => a.employee) }
       })
 
-      const canModifyAll = assignees.every(assignee => 
+      const canModifyAll = assignees.every(assignee =>
         assignee.reportingManager?.toString() === userId.toString())
-      
+
       if (canModifyAll) {
         return { allowed: true, reason: 'manager_authority' }
       }
     }
 
     // Current assignees can modify if task allows it
-    const isAssignee = task.assignedTo.some(a => 
+    const isAssignee = task.assignedTo.some(a =>
       a.employee.toString() === userId.toString())
-    
+
     if (isAssignee && task.canReassign) {
       return { allowed: true, reason: 'assignee_permissions' }
     }
@@ -353,7 +361,7 @@ async function checkTaskModificationPermission(userId, task) {
   }
 }
 
-async function checkAssignmentPermission(assignerId, assigneeId) {
+async function checkAssignmentPermission(assignerId, assigneeId, assignerRole) {
   try {
     // Self assignment is always allowed
     if (assignerId.toString() === assigneeId.toString()) {
@@ -373,12 +381,12 @@ async function checkAssignmentPermission(assignerId, assigneeId) {
     }
 
     // Check if both are in same department (peer assignment)
-    if (assigner.department === assignee.department) {
+    if (assigner.department?.toString() === assignee.department?.toString()) {
       return { allowed: true, reason: 'same_department' }
     }
 
-    // Check if assigner has cross-department assignment permission
-    if (['admin', 'hr', 'manager'].includes(assigner.role)) {
+    // Check if assigner has cross-department assignment permission by role
+    if (['admin', 'hr', 'manager'].includes(assignerRole)) {
       return { allowed: true, reason: 'elevated_permissions' }
     }
 

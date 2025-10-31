@@ -8,7 +8,6 @@ export async function GET(request, { params }) {
     await connectDB()
 
     const designation = await Designation.findById(params.id)
-      .populate('department', 'name')
 
     if (!designation) {
       return NextResponse.json(
@@ -37,11 +36,31 @@ export async function PUT(request, { params }) {
 
     const data = await request.json()
 
+    // Prevent department updates (no longer used)
+    if ('department' in data) delete data.department
+
+    // Normalize level input
+    if ('level' in data) {
+      const levelMap = { entry: 1, junior: 2, mid: 3, senior: 4, lead: 5, manager: 6, director: 7, executive: 8 }
+      if (typeof data.level === 'string') {
+        const lower = data.level.toLowerCase()
+        data.level = levelMap[lower] || parseInt(data.level, 10) || 1
+      } else if (typeof data.level !== 'number') {
+        data.level = 1
+      }
+    }
+
+    const update = {}
+    if (data.title !== undefined) update.title = data.title
+    if (data.level !== undefined) update.level = data.level
+    if (data.description !== undefined) update.description = data.description
+    if (data.isActive !== undefined) update.isActive = data.isActive
+
     const designation = await Designation.findByIdAndUpdate(
       params.id,
-      data,
+      update,
       { new: true, runValidators: true }
-    ).populate('department', 'name')
+    )
 
     if (!designation) {
       return NextResponse.json(

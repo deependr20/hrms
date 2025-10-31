@@ -3,6 +3,7 @@ import connectDB from '@/lib/mongodb'
 import Task from '@/models/Task'
 import Employee from '@/models/Employee'
 import Project from '@/models/Project'
+import User from '@/models/User'
 import { verifyToken } from '@/lib/auth'
 
 // GET - Fetch tasks with filters and pagination
@@ -20,6 +21,9 @@ export async function GET(request) {
 
     await connectDB()
 
+    const currentUser = await User.findById(decoded.userId).select('employeeId role')
+    const currentEmployeeId = currentUser?.employeeId
+
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get('page')) || 1
     const limit = parseInt(searchParams.get('limit')) || 20
@@ -31,20 +35,20 @@ export async function GET(request) {
 
     // Role-based filtering based on view
     if (view === 'personal' || decoded.role === 'employee') {
-      // Personal view - tasks assigned to user or created by user
+      // Personal view - tasks assigned to current employee or created by them
       query.$or = [
-        { 'assignedTo.employee': decoded.userId },
-        { assignedBy: decoded.userId }
+        { 'assignedTo.employee': currentEmployeeId },
+        { assignedBy: { $in: [currentEmployeeId, decoded.userId] } }
       ]
     } else if (view === 'team' && ['manager', 'hr', 'admin'].includes(decoded.role)) {
       // Team view - manager's team tasks
       const teamMembers = await Employee.find({
-        reportingManager: decoded.userId,
+        reportingManager: currentEmployeeId,
         status: 'active'
       }).select('_id')
 
       const teamMemberIds = teamMembers.map(member => member._id)
-      teamMemberIds.push(decoded.userId) // Include manager's own tasks
+      teamMemberIds.push(currentEmployeeId) // Include manager's own tasks
 
       query.$or = [
         { 'assignedTo.employee': { $in: teamMemberIds } },
@@ -52,9 +56,9 @@ export async function GET(request) {
       ]
     } else if (view === 'department' && ['hr', 'admin'].includes(decoded.role)) {
       // Department view - all tasks in user's department
-      const user = await Employee.findById(decoded.userId)
+      const empDoc = await Employee.findById(currentEmployeeId)
       const deptEmployees = await Employee.find({
-        department: user.department,
+        department: empDoc?.department,
         status: 'active'
       }).select('_id')
 
@@ -69,8 +73,8 @@ export async function GET(request) {
     } else {
       // Default to personal view if user doesn't have permission
       query.$or = [
-        { 'assignedTo.employee': decoded.userId },
-        { assignedBy: decoded.userId }
+        { 'assignedTo.employee': currentEmployeeId },
+        { assignedBy: { $in: [currentEmployeeId, decoded.userId] } }
       ]
     }
 
@@ -241,6 +245,10 @@ export async function POST(request) {
 
     await connectDB()
 
+    const currentUser = await User.findById(decoded.userId).select('employeeId role')
+    const currentEmployeeId = currentUser?.employeeId
+    const assignerRole = currentUser?.role || decoded.role
+
     const taskData = await request.json()
     console.log('Task creation request:', taskData)
 
@@ -273,7 +281,7 @@ export async function POST(request) {
         )
       }
 
-      const canAssign = await checkAssignmentPermission(decoded.userId, assignment.employee)
+      const canAssign = await checkAssignmentPermission(currentEmployeeId, assignment.employee, assignerRole)
       if (!canAssign.allowed) {
         return NextResponse.json(
           { success: false, message: `Cannot assign task to employee: ${canAssign.reason}` },
@@ -284,20 +292,20 @@ export async function POST(request) {
 
     // Determine assignment type
     let assignmentType = 'self_assigned'
-    if (taskData.assignedTo.some(a => a.employee !== decoded.userId)) {
-      const assigner = await Employee.findById(decoded.userId)
-      const assignees = await Employee.find({ 
+    if (taskData.assignedTo.some(a => a.employee?.toString() !== currentEmployeeId?.toString())) {
+      const assigner = await Employee.findById(currentEmployeeId)
+      const assignees = await Employee.find({
         _id: { $in: taskData.assignedTo.map(a => a.employee) }
       })
 
       // Check if assigning to team members
-      const teamMembers = assignees.filter(assignee => 
-        assignee.reportingManager?.toString() === decoded.userId)
-      
+      const teamMembers = assignees.filter(assignee =>
+        assignee.reportingManager?.toString() === currentEmployeeId?.toString())
+
       if (teamMembers.length === assignees.length) {
         assignmentType = 'manager_assigned'
-      } else if (assignees.some(assignee => 
-        assignee.department === assigner.department)) {
+      } else if (assignees.some(assignee =>
+        assignee.department?.toString() === assigner?.department?.toString())) {
         assignmentType = 'peer_assigned'
       } else {
         assignmentType = 'cross_department'
@@ -307,7 +315,7 @@ export async function POST(request) {
     // Create task
     const task = new Task({
       ...taskData,
-      assignedBy: decoded.userId,
+      assignedBy: currentEmployeeId,
       assignmentType,
       status: 'assigned',
       assignedTo: taskData.assignedTo.map(assignment => ({
@@ -318,6 +326,11 @@ export async function POST(request) {
     })
 
     await task.save()
+
+    // If this is a subtask, link it to the parent
+    if (task.parentTask) {
+      await Task.findByIdAndUpdate(task.parentTask, { $addToSet: { subtasks: task._id } })
+    }
 
     // Populate the created task
     await task.populate([
@@ -330,7 +343,7 @@ export async function POST(request) {
     task.assignmentHistory.push({
       action: 'assigned',
       to: taskData.assignedTo[0].employee, // Primary assignee
-      performedBy: decoded.userId,
+      performedBy: currentEmployeeId,
       timestamp: new Date(),
       reason: 'Initial task creation'
     })
@@ -353,7 +366,7 @@ export async function POST(request) {
 }
 
 // Helper function to check assignment permissions
-async function checkAssignmentPermission(assignerId, assigneeId) {
+async function checkAssignmentPermission(assignerId, assigneeId, assignerRole) {
   try {
     // Validate input
     if (!assignerId || !assigneeId) {
@@ -379,14 +392,18 @@ async function checkAssignmentPermission(assignerId, assigneeId) {
       return { allowed: false, reason: 'Assignee not found' }
     }
 
+    // Load assignee user role (if any)
+    const assigneeUser = await User.findOne({ employeeId: assigneeId }).select('role')
+    const assigneeRole = assigneeUser?.role
+
     // Admin and HR can assign to anyone
-    if (assigner.role === 'admin' || assigner.role === 'hr') {
+    if (['admin', 'hr'].includes(assignerRole)) {
       return { allowed: true, reason: 'admin_or_hr_privileges' }
     }
 
     // Managers CANNOT assign to HR or Admin
-    if (assigner.role === 'manager') {
-      if (assignee.role === 'hr' || assignee.role === 'admin') {
+    if (assignerRole === 'manager') {
+      if (['hr', 'admin'].includes(assigneeRole)) {
         return { allowed: false, reason: 'Managers cannot assign tasks to HR or Admin' }
       }
 
@@ -405,7 +422,7 @@ async function checkAssignmentPermission(assignerId, assigneeId) {
     }
 
     // Regular employees CANNOT assign to HR or Admin
-    if (assignee.role === 'hr' || assignee.role === 'admin') {
+    if (['hr', 'admin'].includes(assigneeRole)) {
       return { allowed: false, reason: 'Employees cannot assign tasks to HR or Admin' }
     }
 

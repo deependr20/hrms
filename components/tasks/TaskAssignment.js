@@ -11,6 +11,7 @@ const TaskAssignment = ({ taskId, currentAssignees = [], onAssignmentChange, mod
   const [loading, setLoading] = useState(false)
   const [showDropdown, setShowDropdown] = useState(false)
   const [user, setUser] = useState(null)
+  const [currentEmp, setCurrentEmp] = useState(null)
 
   useEffect(() => {
     const userData = localStorage.getItem('user')
@@ -22,7 +23,15 @@ const TaskAssignment = ({ taskId, currentAssignees = [], onAssignmentChange, mod
 
   useEffect(() => {
     filterEmployees()
-  }, [searchTerm, employees])
+  }, [searchTerm, employees, user])
+
+  useEffect(() => {
+    if (user && employees.length) {
+      const myId = user.employeeId || user.id || user._id
+      const me = employees.find(e => e._id === myId)
+      setCurrentEmp(me || null)
+    }
+  }, [user, employees])
 
   const fetchEmployees = async () => {
     try {
@@ -35,7 +44,7 @@ const TaskAssignment = ({ taskId, currentAssignees = [], onAssignmentChange, mod
 
       if (response.ok) {
         const data = await response.json()
-        setEmployees(data.data.employees || [])
+        setEmployees(data.data || [])
       }
     } catch (error) {
       console.error('Error fetching employees:', error)
@@ -50,8 +59,8 @@ const TaskAssignment = ({ taskId, currentAssignees = [], onAssignmentChange, mod
     if (searchTerm) {
       filtered = filtered.filter(emp =>
         `${emp.firstName} ${emp.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        emp.employeeCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        emp.department.toLowerCase().includes(searchTerm.toLowerCase())
+        (emp.employeeCode || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (emp.department?.name || '').toLowerCase().includes(searchTerm.toLowerCase())
       )
     }
 
@@ -64,17 +73,20 @@ const TaskAssignment = ({ taskId, currentAssignees = [], onAssignmentChange, mod
   }
 
   const canAssignTo = (employee) => {
+    if (!user) return false
+    const myId = user.employeeId || user.id || user._id
+
     // Self assignment is always allowed
-    if (employee._id === user.userId) return true
+    if (employee._id === myId) return true
 
     // Admin and HR can assign to anyone
     if (['admin', 'hr'].includes(user.role)) return true
 
     // Managers can assign to their team members
-    if (user.role === 'manager' && employee.reportingManager === user.userId) return true
+    if (user.role === 'manager' && (employee.reportingManager?._id === myId || employee.reportingManager === myId)) return true
 
     // Same department assignment
-    if (employee.department === user.department) return true
+    if ((employee.department?._id && currentEmp?.department?._id && employee.department._id === currentEmp.department._id)) return true
 
     return false
   }
@@ -162,16 +174,18 @@ const TaskAssignment = ({ taskId, currentAssignees = [], onAssignmentChange, mod
   }
 
   const getAssignmentTypeLabel = (employee) => {
-    if (employee._id === user?.userId) return 'Self'
-    if (employee.reportingManager === user?.userId) return 'Team Member'
-    if (employee.department === user?.department) return 'Colleague'
+    const myId = user?.employeeId || user?.id || user?._id
+    if (employee._id === myId) return 'Self'
+    if (employee.reportingManager?._id === myId || employee.reportingManager === myId) return 'Team Member'
+    if (employee.department?._id && currentEmp?.department?._id && employee.department._id === currentEmp.department._id) return 'Colleague'
     return 'Cross-Department'
   }
 
   const getAssignmentTypeColor = (employee) => {
-    if (employee._id === user?.userId) return 'bg-blue-100 text-blue-800'
-    if (employee.reportingManager === user?.userId) return 'bg-green-100 text-green-800'
-    if (employee.department === user?.department) return 'bg-yellow-100 text-yellow-800'
+    const myId = user?.employeeId || user?.id || user?._id
+    if (employee._id === myId) return 'bg-blue-100 text-blue-800'
+    if (employee.reportingManager?._id === myId || employee.reportingManager === myId) return 'bg-green-100 text-green-800'
+    if (employee.department?._id && currentEmp?.department?._id && employee.department._id === currentEmp.department._id) return 'bg-yellow-100 text-yellow-800'
     return 'bg-purple-100 text-purple-800'
   }
 
@@ -197,7 +211,7 @@ const TaskAssignment = ({ taskId, currentAssignees = [], onAssignmentChange, mod
                       {assignee.employeeData?.firstName} {assignee.employeeData?.lastName}
                     </p>
                     <p className="text-xs text-gray-500">
-                      {assignee.employeeData?.employeeCode} • {assignee.employeeData?.department}
+                      {assignee.employeeData?.employeeCode} • {assignee.employeeData?.department?.name}
                     </p>
                   </div>
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${getAssignmentTypeColor(assignee.employeeData)}`}>
@@ -283,7 +297,7 @@ const TaskAssignment = ({ taskId, currentAssignees = [], onAssignmentChange, mod
                       {employee.firstName} {employee.lastName}
                     </p>
                     <p className="text-xs text-gray-500">
-                      {employee.employeeCode} • {employee.department} • {employee.designation}
+                      {employee.employeeCode} • {employee.department?.name} • {employee.designation?.title}
                     </p>
                   </div>
                 </div>

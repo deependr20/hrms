@@ -1,11 +1,15 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+export const dynamic = 'force-dynamic'
+
+
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter } from 'next/navigation'
+import nextDynamic from 'next/dynamic'
 import { FaTasks, FaSave, FaArrowLeft } from 'react-icons/fa'
 import RoleBasedAccess from '@/components/RoleBasedAccess'
 
-export default function CreateTaskPage() {
+function CreateTaskContent() {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -15,7 +19,8 @@ export default function CreateTaskPage() {
     estimatedHours: '',
     assignToSelf: true,
     assignToOthers: false,
-    selectedEmployees: []
+    selectedEmployees: [],
+    parentTask: ''
   })
   const [employees, setEmployees] = useState([])
   const [loading, setLoading] = useState(false)
@@ -23,7 +28,9 @@ export default function CreateTaskPage() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [isInitializing, setIsInitializing] = useState(true)
+  const [currentEmp, setCurrentEmp] = useState(null)
   const router = useRouter()
+
 
   useEffect(() => {
     const initializeUser = async () => {
@@ -47,6 +54,26 @@ export default function CreateTaskPage() {
     initializeUser()
   }, []) // Empty dependency array - run only once on mount
 
+  // Resolve current employee and prefill parent task from URL
+  useEffect(() => {
+    if (user && employees.length) {
+      const myId = user.employeeId || user.id || user._id
+      const me = employees.find(e => e._id === myId)
+      setCurrentEmp(me || null)
+    }
+  }, [user, employees])
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      const parent = params.get('parent')
+      if (parent) {
+        setFormData(prev => ({ ...prev, parentTask: parent }))
+      }
+    }
+  }, [])
+
+
   const fetchEmployees = async () => {
     try {
       const token = localStorage.getItem('token')
@@ -59,8 +86,8 @@ export default function CreateTaskPage() {
       if (response.ok) {
         const data = await response.json()
         console.log('Employees API response:', data)
-        setEmployees(data.data.employees || [])
-        console.log('Employees set:', data.data.employees?.length || 0)
+        setEmployees(data.data || [])
+        console.log('Employees set:', (data.data || []).length)
       } else {
         console.error('Failed to fetch employees:', response.status)
       }
@@ -90,7 +117,7 @@ export default function CreateTaskPage() {
     e.preventDefault()
     setError('')
     setSuccess('')
-    
+
     if (!formData.title || !formData.dueDate) {
       setError('Title and due date are required')
       return
@@ -99,14 +126,15 @@ export default function CreateTaskPage() {
     try {
       setLoading(true)
       const token = localStorage.getItem('token')
+      const myId = user.employeeId || user.id || user._id
 
       // Build assignees array
       let assignees = []
 
       if (formData.assignToSelf) {
-        console.log('Adding self to assignees. User ID:', user.userId)
+        console.log('Adding self to assignees. Employee ID:', myId)
         assignees.push({
-          employee: user.userId,
+          employee: myId,
           role: 'owner'
         })
       }
@@ -137,7 +165,7 @@ export default function CreateTaskPage() {
         category: formData.category,
         dueDate: formData.dueDate,
         estimatedHours: formData.estimatedHours ? parseFloat(formData.estimatedHours) : 0,
-        assignedBy: user.userId,
+        parentTask: formData.parentTask || undefined,
         assignedTo: assignees
       }
 
@@ -172,37 +200,26 @@ export default function CreateTaskPage() {
 
   const getFilteredEmployees = () => {
     if (!user) return []
+    const myId = user.employeeId || user.id || user._id
 
     return employees.filter(emp => {
-      if (emp._id === user.userId) return false // Don't show self in others list
+      if (emp._id === myId) return false // Don't show self in others list
 
       // Show based on role permissions
       if (user.role === 'admin' || user.role === 'hr') {
         return true // Can assign to anyone
       } else if (user.role === 'manager') {
-        // Managers CANNOT assign to HR or Admin
-        if (emp.role === 'hr' || emp.role === 'admin') {
-          return false
-        }
-
         // Check if this employee reports to this manager
-        const isDirectReport = emp.reportingManager?._id === user.userId ||
-                              emp.reportingManager === user.userId
+        const isDirectReport = (emp.reportingManager?._id === myId) || (emp.reportingManager === myId)
 
         // Check if same department (for peer assignment)
-        const sameDept = emp.department?._id === user.department ||
-                        emp.department === user.department
+        const sameDept = !!(emp.department?._id && currentEmp?.department?._id && emp.department._id === currentEmp.department._id)
 
         return isDirectReport || sameDept
       } else {
         // Regular employees can only assign to same department colleagues
-        // NOT to HR or Admin
-        if (emp.role === 'hr' || emp.role === 'admin') {
-          return false
-        }
-
-        return emp.department?._id === user.department ||
-               emp.department === user.department
+        const sameDept = !!(emp.department?._id && currentEmp?.department?._id && emp.department._id === currentEmp.department._id)
+        return sameDept
       }
     })
   }
@@ -285,6 +302,32 @@ export default function CreateTaskPage() {
                   className="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                   placeholder="Enter task description"
                 />
+              </div>
+
+              {/* Parent Task (optional) */}
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Parent Task (optional)
+                </label>
+                <div className="flex space-x-2">
+                  <input
+                    type="text"
+                    name="parentTask"
+                    value={formData.parentTask}
+                    onChange={handleInputChange}
+                    className="flex-1 px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
+                    placeholder="Paste parent task ID or use 'Create subtask' from a task"
+                  />
+                  {formData.parentTask && (
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, parentTask: '' }))}
+                      className="px-3 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
               </div>
 
               <div>
@@ -413,7 +456,7 @@ export default function CreateTaskPage() {
                           <label className="ml-2 text-sm text-gray-700">
                             {employee.firstName} {employee.lastName}
                             {employee.department?.name && ` (${employee.department.name})`}
-                            {employee.designation?.name && ` - ${employee.designation.name}`}
+                            {employee.designation?.title && ` - ${employee.designation.title}`}
                           </label>
                         </div>
                       ))}
@@ -461,5 +504,27 @@ export default function CreateTaskPage() {
         </div>
       </div>
     </RoleBasedAccess>
+  )
+}
+
+
+
+// Disable SSR/SSG for this client-heavy page to avoid static export issues
+const CreateTaskNoSSR = nextDynamic(() => Promise.resolve(CreateTaskContent), { ssr: false })
+
+export default function CreateTaskPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex justify-center items-center h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading...</p>
+          </div>
+        </div>
+      }
+    >
+      <CreateTaskNoSSR />
+    </Suspense>
   )
 }

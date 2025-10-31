@@ -6,20 +6,18 @@ import { FaPlus, FaEdit, FaTrash, FaBriefcase } from 'react-icons/fa'
 
 export default function DesignationsPage() {
   const [designations, setDesignations] = useState([])
-  const [departments, setDepartments] = useState([])
+
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [editingDesig, setEditingDesig] = useState(null)
   const [formData, setFormData] = useState({
     title: '',
-    department: '',
     level: '',
     description: '',
   })
 
   useEffect(() => {
     fetchDesignations()
-    fetchDepartments()
   }, [])
 
   const fetchDesignations = async () => {
@@ -41,21 +39,7 @@ export default function DesignationsPage() {
     }
   }
 
-  const fetchDepartments = async () => {
-    try {
-      const token = localStorage.getItem('token')
-      const response = await fetch('/api/departments', {
-        headers: { 'Authorization': `Bearer ${token}` },
-      })
 
-      const data = await response.json()
-      if (data.success) {
-        setDepartments(data.data)
-      }
-    } catch (error) {
-      console.error('Fetch departments error:', error)
-    }
-  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -82,7 +66,7 @@ export default function DesignationsPage() {
         toast.success(data.message)
         setShowModal(false)
         setEditingDesig(null)
-        setFormData({ title: '', department: '', level: '', description: '' })
+        setFormData({ title: '', level: '', description: '' })
         fetchDesignations()
       } else {
         toast.error(data.message)
@@ -95,10 +79,10 @@ export default function DesignationsPage() {
 
   const handleEdit = (desig) => {
     setEditingDesig(desig)
+    const numToKey = { 1: 'entry', 2: 'junior', 3: 'mid', 4: 'senior', 5: 'lead', 6: 'manager', 7: 'director', 8: 'executive' }
     setFormData({
       title: desig.title,
-      department: desig.department?._id || '',
-      level: desig.level || '',
+      level: numToKey[desig.level] || '',
       description: desig.description || '',
     })
     setShowModal(true)
@@ -131,7 +115,7 @@ export default function DesignationsPage() {
   const handleCloseModal = () => {
     setShowModal(false)
     setEditingDesig(null)
-    setFormData({ title: '', department: '', level: '', description: '' })
+    setFormData({ title: '', level: '', description: '' })
   }
 
   return (
@@ -161,13 +145,7 @@ export default function DesignationsPage() {
           <div className="text-2xl sm:text-3xl font-bold text-gray-800">{designations.length}</div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-md p-3 sm:p-6">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-xs sm:text-sm font-medium text-gray-600 truncate">Departments</h3>
-            <FaBriefcase className="text-green-500 flex-shrink-0" />
-          </div>
-          <div className="text-2xl sm:text-3xl font-bold text-gray-800">{departments.length}</div>
-        </div>
+
 
         <div className="bg-white rounded-lg shadow-md p-3 sm:p-6">
           <div className="flex items-center justify-between mb-2">
@@ -199,9 +177,7 @@ export default function DesignationsPage() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Title
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Department
-                  </th>
+
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Level
                   </th>
@@ -216,7 +192,7 @@ export default function DesignationsPage() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {designations.length === 0 ? (
                   <tr>
-                    <td colSpan="5" className="px-6 py-4 text-center text-gray-500">
+                    <td colSpan="4" className="px-6 py-4 text-center text-gray-500">
                       No designations found
                     </td>
                   </tr>
@@ -233,9 +209,7 @@ export default function DesignationsPage() {
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {desig.department?.name || 'N/A'}
-                      </td>
+
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
                           {desig.level || 'N/A'}
@@ -290,23 +264,7 @@ export default function DesignationsPage() {
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Department
-                  </label>
-                  <select
-                    value={formData.department}
-                    onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  >
-                    <option value="">Select Department</option>
-                    {departments.map((dept) => (
-                      <option key={dept._id} value={dept._id}>
-                        {dept.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">

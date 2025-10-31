@@ -240,7 +240,7 @@ export default function EmployeeDashboard({ user }) {
       </div>
 
       {/* Check-In/Check-Out Section */}
-      <div className="bg-gradient-to-br from-teal-500 via-cyan-500 to-blue-500 rounded-2xl shadow-xl p-4 sm:p-6 text-white">
+      <div className="bg-gradient-to-br from-teal-700 via-cyan-500 to-blue-500 rounded-2xl shadow-xl p-4 sm:p-6 text-white">
         <div className="flex flex-col lg:flex-row items-center justify-between gap-4 sm:gap-6">
           {/* Left Side - Info */}
           <div className="flex-1 w-full">
@@ -379,10 +379,10 @@ export default function EmployeeDashboard({ user }) {
               <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-blue-400 rounded-full"></div>
               <span>Full Day: 8+ hrs</span>
             </div>
-            <div className="flex items-center space-x-1 sm:space-x-2">
+            {/* <div className="flex items-center space-x-1 sm:space-x-2">
               <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-yellow-400 rounded-full"></div>
-              <span>Half Day: 4-7.99 hrs</span>
-            </div>
+              <span>Half Day:  hrs</span>
+            </div> */}
           </div>
         </div>
       </div>

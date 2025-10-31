@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { FaBars, FaBell, FaUser, FaSignOutAlt, FaCog, FaSearch } from 'react-icons/fa'
 import toast from 'react-hot-toast'
@@ -12,12 +12,31 @@ export default function Header({ toggleSidebar }) {
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const notifRef = useRef(null)
+  const profileRef = useRef(null)
 
   useEffect(() => {
     setMounted(true)
     const userData = localStorage.getItem('user')
     if (userData) {
       setUser(JSON.parse(userData))
+    }
+
+    const handleClickOutside = (event) => {
+      if (notifRef.current && !notifRef.current.contains(event.target)) {
+        setShowNotifications(false)
+      }
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
+        setShowProfileMenu(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    document.addEventListener('touchstart', handleClickOutside)
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('touchstart', handleClickOutside)
     }
   }, [])
 
@@ -80,7 +99,7 @@ export default function Header({ toggleSidebar }) {
           <PWAStatus />
 
           {/* Notifications */}
-          <div className="relative mt-3 md:mt-0">
+          <div ref={notifRef} className="relative mt-3 md:mt-0">
             <button
               onClick={() => setShowNotifications(!showNotifications)}
               className="relative p-1.5 sm:p-2  text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
@@ -118,7 +137,7 @@ export default function Header({ toggleSidebar }) {
           </div>
 
           {/* Profile menu */}
-          <div className="relative mt-1 md:mt-0">
+          <div ref={profileRef} className="relative mt-1 md:mt-0">
             <button
               onClick={() => setShowProfileMenu(!showProfileMenu)}
               className="flex items-center space-x-2 sm:space-x-3 p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors"

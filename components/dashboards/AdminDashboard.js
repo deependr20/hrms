@@ -297,7 +297,7 @@ export default function AdminDashboard({ user }) {
       {/* Employee Management Section */}
       <div className="bg-white rounded-lg shadow-md p-6">
         <div className="md:flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold md:mt-0 mt-8 md:mb-0 mb-4 text-gray-900">Employee Management</h3>
+          <h3 className="text-lg font-semibold  md:mt-0 mt-3 md:mb-0 mb-4 text-gray-900">Employee Management</h3>
           <div className="flex space-x-3">
             <div className="relative">
               <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />

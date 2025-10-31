@@ -188,7 +188,8 @@ export default function MyTasksPage() {
   }
 
   const getMyAssignment = (task) => {
-    return task.assignedTo?.find(a => a.employee._id === user?.userId || a.employee === user?.userId)
+    const myId = user?.employeeId || user?.id || user?._id
+    return task.assignedTo?.find(a => a.employee?._id === myId || a.employee === myId)
   }
 
   const filteredTasks = tasks.filter(task => {

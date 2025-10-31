@@ -166,8 +166,9 @@ export default function TaskDetailsPage() {
 
   const getMyAssignment = () => {
     if (!task || !user) return null
-    return task.assignedTo?.find(assignment => 
-      assignment.employee?._id === user.userId || assignment.employee === user.userId
+    const myEmpId = user.employeeId || user.id || user._id
+    return task.assignedTo?.find(assignment =>
+      assignment.employee?._id === myEmpId || assignment.employee === myEmpId
     )
   }
 
@@ -385,6 +386,56 @@ export default function TaskDetailsPage() {
                     </span>
                   </div>
                 ))}
+              </div>
+            </div>
+
+            {/* Hierarchy */}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">Hierarchy</h3>
+              {task.parentTask && (
+                <div className="p-3 bg-gray-50 rounded-lg mb-3 flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600">Parent Task</p>
+                    <p className="font-medium text-gray-900">#{task.parentTask.taskNumber} — {task.parentTask.title}</p>
+                  </div>
+                  <button
+                    onClick={() => router.push(`/dashboard/tasks/${task.parentTask._id}`)}
+                    className="text-blue-600 hover:underline text-sm"
+                  >
+                    View
+                  </button>
+                </div>
+              )}
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm text-gray-600">Subtasks</p>
+                  <button
+                    onClick={() => router.push(`/dashboard/tasks/create?parent=${task._id}`)}
+                    className="text-blue-600 hover:underline text-sm"
+                  >
+                    Create subtask
+                  </button>
+                </div>
+                {task.subtasks && task.subtasks.length > 0 ? (
+                  <ul className="space-y-2">
+                    {task.subtasks.map((st) => (
+                      <li key={st._id} className="flex items-center justify-between p-2 bg-white rounded border">
+                        <div>
+                          <p className="font-medium text-gray-900">#{st.taskNumber} — {st.title}</p>
+                          <p className="text-xs text-gray-600">{st.status} • {st.progress || 0}%</p>
+                        </div>
+                        <button
+                          onClick={() => router.push(`/dashboard/tasks/${st._id}`)}
+                          className="text-blue-600 hover:underline text-sm"
+                        >
+                          Open
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-gray-600 text-sm">No subtasks</p>
+                )}
               </div>
             </div>
           </div>

@@ -158,8 +158,8 @@ export default function AttendanceReportPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 space-y-3 sm:space-y-0">
         <div>
-          <h1 className="page-title text-zinc-900">Attendance Report</h1>
-          <p className="page-subtitle text-zinc-900">Detailed analysis of your attendance patterns</p>
+          <h1 className="page-title font-semibold text-3xl text-zinc-900">Attendance Report</h1>
+          <p className="page-subtitle mt-1 text-zinc-900">Detailed analysis of your attendance patterns</p>
         </div>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
           <select
